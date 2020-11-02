@@ -1,0 +1,29 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" routerLink="">LGPUN</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+	<ul class="nav navbar-nav">
+		<li routerLinkActive="active" class="nav-item" *ngIf="isAuth">
+			<a class="nav-link" routerLink="cardsList">Liste des cartes</a>
+		</li>
+		<li routerLinkActive="active" class="nav-item" *ngIf="isAuth">
+			<a class="nav-link" routerLink="party/create">Créer une partie</a>
+		</li>
+		<li routerLinkActive="active" class="nav-item" *ngIf="isAuth">
+			<a class="nav-link" routerLink="party/join">Rejoindre une partie</a>
+		</li>
+		<li routerLinkActive="active" class="nav-item" *ngIf="!isAuth">
+			<a class="nav-link" routerLink="auth/signup">Créer un compte</a>
+		</li>
+		<li routerLinkActive="active" class="nav-item" *ngIf="!isAuth">
+			<a class="nav-link" routerLink="auth/signin">Connexion</a>
+		</li>
+		<li routerLinkActive="active" class="nav-item" *ngIf="isAuth">
+			<a class="nav-link" (click)="onSignOut()" style="cursor:pointer">Déconnexion</a>
+		</li>
+	</ul>
+  </div>
+</nav>

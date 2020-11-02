@@ -1,0 +1,27 @@
+<div class="row justify-content-center">
+  <div class="col-sm-8 col-lg-6 col-sm-offset-2">
+    <h2>Créer une nouvelle partie</h2>
+    <form [formGroup]="createPartyForm" (ngSubmit)="onCreateParty()">
+      <div class="form-group">
+        <label for="partyCode">Code de la partie</label>
+        <input type="text" id="partyCode"
+               class="form-control" formControlName="partyCode">
+      </div>
+      <div class="form-group">
+        <label for="cardsSelected">Choix des cartes</label>
+        <select id="cardsSelected" class="form-control" formControlName="cardsSelected" (change)="onSelect()" multiple>
+          <option *ngFor="let card of cards" [value]="card.idCard">{{ card.name }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="playerNbr">Nombre de joueurs (Complété automatiquement)</label>
+        <input type="text" id="playerNbr"
+               class="form-control" formControlName="playerNbr" readonly>
+      </div>
+      <button class="btn btn-success" [disabled]="createPartyForm.invalid"
+              type="submit">Créer
+      </button>
+
+    </form>
+  </div>
+</div>

@@ -1,0 +1,9 @@
+<div class="row justify-content-center">
+  <div class="col-xs-12 col-lg-6">
+  	<img [src]="book.photo" *ngIf="book.photo" style="max-width:400px">
+    <h1>{{ book.title }}</h1>
+    <h3>{{ book.author }}</h3>
+    <p>{{ book.synopsis }}</p>
+    <button class="btn btn-primary" (click)="onBack()">Retour</button>
+  </div>
+</div>
