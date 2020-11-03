@@ -48,7 +48,7 @@ export class PartyCreateComponent implements OnInit {
 		const numberOfPlayers = cards.length-3;
 		
 		this.partyService.newParty(code,cards,numberOfPlayers);
-		this.router.navigate(['/party/' + code]);
+		this.router.navigate(['/party/lobby']);
 	}
 
 	onSelect(){

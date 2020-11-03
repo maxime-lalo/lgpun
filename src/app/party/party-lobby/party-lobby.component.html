@@ -1,0 +1,23 @@
+<div class="row justify-content-center">
+	<div class="col-sm-10 col-lg-8">
+		<h2>
+			Bienvenue sur la partie : {{ party.code }}
+			<span class="float-right">
+				<button class="btn btn-danger" [disabled]="party.code === ''" (click)="onQuitParty()" *ngIf="party.creator !== user">Quitter la partie</button>
+				<button class="btn btn-danger" [disabled]="party.code === ''" (click)="onDeleteParty()" *ngIf="party.creator === user">Supprimer la partie</button>
+				<button class="btn btn-success ml-2" [disabled]="(party.code === '') || (party.players.length != (party.numberOfPlayers-1))" (click)="onLaunchParty()" *ngIf="party.creator === user">Lancer la partie</button>
+			</span>
+		</h2>
+	</div>
+</div>
+<div class="row justify-content-center mt-2">
+	<div class="col-sm-10 col-lg-2">
+		<ul class="list-group">
+			<li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let user of party.players">
+				{{ user.pseudo }}
+				<span class="badge badge-success badge-pill" *ngIf="user.id === party.creator">HOST</span>
+				<span class="badge badge-primary badge-pill" *ngIf="user.id !== party.creator">JOUEUR</span>
+			</li>
+		  </ul>
+	</div>
+</div>

@@ -39,9 +39,10 @@ export class PartyService {
 
 	newParty(code:string, cards:number[], numberOfPlayers:number):void{
 		const uid = this.authService.getCurrentUser().uid;
+		const pseudo = this.authService.getCurrentUser().displayName;
 		firebase.database().ref('users/' + uid + '/party').once('value').then(s =>{
 			if (!s.exists()) {
-				let party = new Party(code,numberOfPlayers,cards,false,0,[uid],uid);
+				let party = new Party(code,numberOfPlayers,cards,false,0,[{"id":uid,"pseudo":pseudo}],uid);
 
 				firebase.database().ref('/parties/' + code).set(party);
 				firebase.database().ref('/users/' + uid + '/party').set({
@@ -53,6 +54,7 @@ export class PartyService {
 
 	joinParty(partyCode:string){
 		const uid = this.authService.getCurrentUser().uid;
+		const pseudo = this.authService.getCurrentUser().displayName;
 		firebase.database().ref('users/' + uid + '/party').set({
 			"code":partyCode,
 		});
@@ -61,7 +63,7 @@ export class PartyService {
 		firebase.database().ref(url).once('value', (snapshot) => {
 			if (snapshot.exists()) {
 				let players = snapshot.val();
-				players.push(uid);
+				players.push({"id":uid,"pseudo":pseudo});
 				firebase.database().ref(url).set(players);
 			}
 		});
@@ -75,7 +77,11 @@ export class PartyService {
 				let urlParty = 'parties/' + partyCode.code + '/players';
 				firebase.database().ref(urlParty).once('value', (snapshot2) =>{
 					let players = snapshot2.val();
-					players.splice(uid,1);
+					players.forEach( (player,index) =>{
+						if(player.id == uid){
+							players.splice(index,1);
+						}
+					});
 					firebase.database().ref(urlParty).set(players);
 				});
 			}

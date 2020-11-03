@@ -34,6 +34,7 @@ import { PartyComponent } from './party/party.component';
 import { PartyCreateComponent } from './party/party-create/party-create.component';
 import { PartyJoinComponent } from './party/party-join/party-join.component';
 import { HomeComponent } from './home/home.component';
+import { PartyLobbyComponent } from './party/party-lobby/party-lobby.component';
 
 @NgModule({
   declarations: [
@@ -48,7 +49,8 @@ import { HomeComponent } from './home/home.component';
     PartyComponent,
     PartyCreateComponent,
     PartyJoinComponent,
-    HomeComponent
+    HomeComponent,
+    PartyLobbyComponent
   ],
   imports: [
     BrowserModule,

@@ -35,6 +35,6 @@ export class PartyJoinComponent implements OnInit {
 	onJoinParty(){
 		let partyCode = this.joinPartyForm.get('partyCode').value;
 		this.partyService.joinParty(partyCode);
-		this.router.navigate(['/party/' + partyCode]);
+		this.router.navigate(['/party/lobby']);
 	}
 }

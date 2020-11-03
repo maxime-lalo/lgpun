@@ -16,6 +16,7 @@ import { PartyCreateComponent } from './party/party-create/party-create.componen
 import { HomeComponent } from './home/home.component';
 
 import { AuthGuardService } from './services/auth-guard.service';
+import { PartyLobbyComponent } from './party/party-lobby/party-lobby.component';
 
 const routes: Routes = [
   { path: 'auth/signup', component: SignupComponent },
@@ -24,7 +25,8 @@ const routes: Routes = [
   { path: 'cardsList', canActivate:[AuthGuardService], component: CardsListComponent },
   { path: 'party/join', canActivate:[AuthGuardService], component: PartyJoinComponent },
   { path: 'party/create', canActivate:[AuthGuardService], component: PartyCreateComponent },
-  { path: 'party/:id', canActivate:[AuthGuardService], component: PartyComponent },
+  { path: 'party/lobby', canActivate:[AuthGuardService], component: PartyLobbyComponent },
+  { path: 'party', canActivate:[AuthGuardService], component: PartyComponent },
   { path: 'books/new', canActivate:[AuthGuardService], component: BookFormComponent },
   { path: 'books/view/:id', canActivate:[AuthGuardService], component: SingleBookComponent },
   { path: '', component: HomeComponent },
