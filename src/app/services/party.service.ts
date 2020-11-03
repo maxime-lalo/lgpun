@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
+import { Observable } from 'rxjs';
 import { Party } from '../models/party.model';
 import { AuthService } from '../services/auth.service';
+
 import firebase from 'firebase/app';
 import 'firebase/database';
 import 'firebase/storage';
@@ -13,6 +15,7 @@ import DataSnapshot = firebase.database.DataSnapshot;
 export class PartyService {
 	parties: Party[] = [];
 	partiesSubject = new Subject<Party[]>();
+
 	alreadyExists:boolean = false;
 
 	constructor(private authService:AuthService) { 
@@ -34,85 +37,48 @@ export class PartyService {
 		});
 	}
 
-	createNewParty(newParty: Party){
-		this.parties.push(newParty);
-		this.saveParties();
-		this.emitParties();
-	}
+	newParty(code:string, cards:number[], numberOfPlayers:number):void{
+		const uid = this.authService.getCurrentUser().uid;
+		firebase.database().ref('users/' + uid + '/party').once('value').then(s =>{
+			if (!s.exists()) {
+				let party = new Party(code,numberOfPlayers,cards,false,0,[uid],uid);
 
-	partyExists(partyCode: string){
-		firebase.database().ref('/parties').orderByChild('code').equalTo(partyCode).once('value').then(snapshot => {
-			let exists: boolean = false;
-			if (snapshot.val()) {
-				if (snapshot.val()[0].code == partyCode) {
-					exists = true;
-				}
-				if (exists) {
-					return false;
-				}else{
-					return true;
-				}
+				firebase.database().ref('/parties/' + code).set(party);
+				firebase.database().ref('/users/' + uid + '/party').set({
+					"code":code
+				});
 			}
-			return exists;
-		}).catch(error => console.log(error));
+		})
 	}
 
-	removeParty(party: Party){
-		const cardIndexToRemove = this.parties.findIndex( (partyEl) => {
-			if(partyEl === party){
-				return true;
+	joinParty(partyCode:string){
+		const uid = this.authService.getCurrentUser().uid;
+		firebase.database().ref('users/' + uid + '/party').set({
+			"code":partyCode,
+		});
+
+		let url = 'parties/' + partyCode + '/players';
+		firebase.database().ref(url).once('value', (snapshot) => {
+			if (snapshot.exists()) {
+				let players = snapshot.val();
+				players.push(uid);
+				firebase.database().ref(url).set(players);
 			}
 		});
-		this.parties.splice(cardIndexToRemove,1);
-		this.saveParties();
-		this.emitParties();
 	}
 
-	quitParty(partyToQuit: Party){
-		if (this.parties) {
-			this.parties.forEach((party,index) => {
-				if (party.code == partyToQuit.code) {
-					console.log("Party code found");
-					partyToQuit.players.forEach((player, index) =>{
-						if (player == this.authService.getCurrentUser().uid) {
-							party.players.splice(index,1);
-							if (party.players.length == 0) {
-								this.removeParty(party);
-							}
-						}
-					});
-				}
-			});
-			this.saveParties();
-			this.emitParties();
-		}
-	}
-
-	joinParty(partyToJoin: Party){
-		if (this.parties) {
-			this.parties.forEach((party,index) => {
-				if (party.code == partyToJoin.code) {
-					let idUser = this.authService.getCurrentUser().uid;
-					if (party.players) {
-						party.players.push(idUser);
-					}else{
-						party.players = [idUser];
-					}
-				}
-			});
-			this.saveParties();
-			this.emitParties();
-		}
-	}
-
-	getSinglePartyByCode(partyCode: string){
-		return new Promise( (resolve, reject) => {
-			firebase.database().ref('/parties').orderByChild('code').equalTo(partyCode).once('value').then( (data:DataSnapshot) => {
-				resolve(data.val()[0]);					
-			},
-			(error) =>{
-				reject(error);
-			});
-		})
+	quitParty(){
+		const uid = this.authService.getCurrentUser().uid;
+		firebase.database().ref('users/' + uid + '/party').once('value', (snapshot) =>{
+			if(snapshot.exists()){
+				let partyCode = snapshot.val();
+				let urlParty = 'parties/' + partyCode.code + '/players';
+				firebase.database().ref(urlParty).once('value', (snapshot2) =>{
+					let players = snapshot2.val();
+					players.splice(uid,1);
+					firebase.database().ref(urlParty).set(players);
+				});
+			}
+		});
 	}
 }

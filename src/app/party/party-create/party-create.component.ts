@@ -14,6 +14,8 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./party-create.component.scss']
 })
 export class PartyCreateComponent implements OnInit {
+	errorMsg:string;
+
 	cards: Card[];
 	cardsSubscription: Subscription;
 
@@ -32,7 +34,7 @@ export class PartyCreateComponent implements OnInit {
 		this.createPartyForm = this.formBuilder.group({
 			partyCode: ['',[Validators.required, Validators.pattern(/[0-9a-zA-Z]{4,6}/)]],
 			cardsSelected: ['', Validators.required],
-			playerNbr : ['']
+			playerNbr : ['',Validators.min(3)]
 		});
 	}
 
@@ -44,11 +46,9 @@ export class PartyCreateComponent implements OnInit {
 		const code = this.createPartyForm.get('partyCode').value;
 		const cards = this.createPartyForm.get('cardsSelected').value;
 		const numberOfPlayers = cards.length-3;
-
-		const newParty = new Party(code,numberOfPlayers,cards,[]);
-
-		this.partyService.createNewParty(newParty);
-		this.router.navigate(['/party/' + newParty.code]);
+		
+		this.partyService.newParty(code,cards,numberOfPlayers);
+		this.router.navigate(['/party/' + code]);
 	}
 
 	onSelect(){
@@ -56,6 +56,12 @@ export class PartyCreateComponent implements OnInit {
 		const playerNbr = this.createPartyForm.get('playerNbr');
 
 		let nbr:number = select.length - 3;
+		if (nbr >= 3 || nbr == -3) {
+			this.errorMsg = null;
+		}else{
+			this.errorMsg = "Sélectionnez assez de cartes pour pouvoir jouer à 3 minimum";
+		}
+
 		if (nbr <= 0) {
 			playerNbr.setValue(0);
 		}else{
