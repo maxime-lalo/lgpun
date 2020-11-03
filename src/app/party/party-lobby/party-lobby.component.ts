@@ -71,5 +71,8 @@ export class PartyLobbyComponent implements OnInit {
     this.saveParty();
   }
 
-	onDeleteParty(){}
+	onDeleteParty(){
+		this.partyService.deleteParty();
+		this.emitParty();
+	}
 }

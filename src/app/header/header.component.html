@@ -9,14 +9,17 @@
 		<li routerLinkActive="active" class="nav-item" *ngIf="isAuth">
 			<a class="nav-link" routerLink="cardsList">Liste des cartes</a>
 		</li>
-		<li routerLinkActive="active" class="nav-item" *ngIf="isAuth">
+		<li routerLinkActive="active" class="nav-item" *ngIf="isAuth && !isInGame">
 			<a class="nav-link" routerLink="party/create">Créer une partie</a>
 		</li>
-		<li routerLinkActive="active" class="nav-item" *ngIf="isAuth">
+		<li routerLinkActive="active" class="nav-item" *ngIf="isAuth && !isInGame">
 			<a class="nav-link" routerLink="party/join">Rejoindre une partie</a>
 		</li>
 		<li routerLinkActive="active" class="nav-item" *ngIf="!isAuth">
 			<a class="nav-link" routerLink="auth/signup">Créer un compte</a>
+		</li>
+		<li routerLinkActive="active" class="nav-item" *ngIf="isAuth && isInGame">
+			<a class="nav-link" routerLink="party/lobby">Revenir au lobby</a>
 		</li>
 		<li routerLinkActive="active" class="nav-item" *ngIf="!isAuth">
 			<a class="nav-link" routerLink="auth/signin">Connexion</a>
