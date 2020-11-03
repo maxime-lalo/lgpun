@@ -42,7 +42,7 @@ export class PartyService {
 		const pseudo = this.authService.getCurrentUser().displayName;
 		firebase.database().ref('users/' + uid + '/party').once('value').then(s =>{
 			if (!s.exists()) {
-				let party = new Party(code,numberOfPlayers,cards,false,0,[{"id":uid,"pseudo":pseudo}],uid);
+				let party = new Party(code,numberOfPlayers,cards,false,'',[{"id":uid,"pseudo":pseudo}],uid,[]);
 
 				firebase.database().ref('/parties/' + code).set(party);
 				firebase.database().ref('/users/' + uid + '/party').set({
@@ -105,4 +105,55 @@ export class PartyService {
 			}
 		});
 	}
+
+	startParty(){
+		const uid = this.authService.getCurrentUser().uid;
+		firebase.database().ref('users/' + uid + '/party').once('value', (snapshot) =>{
+			if(snapshot.exists()){
+				let partyCode = snapshot.val().code;
+				this.shuffleCards(partyCode);
+			}
+		});
+		
+	}
+
+	shuffleCards(partyCode:string){
+		let party = null;
+		firebase.database().ref('parties/' + partyCode).once('value',(snapshot2) =>{
+			party = snapshot2.val();
+			this.shuffle(party.cards);
+			for(let i = 0; i < party.cards.length; i++){
+				firebase.database().ref('cards/' + party.cards[i]).once('value',(snapshot3) =>{
+					if(snapshot3.exists()){
+						let card = snapshot3.val();
+						if(i < 3){
+							firebase.database().ref('/parties/' + partyCode + '/notUsedCards/' + i).set(card);
+						}else{
+							party.players[i-3].card = card;
+							firebase.database().ref('/parties/' + partyCode + '/players/' + (i-3)).set(party.players[i-3]);
+						}
+					}
+				});
+			}
+		});
+	}
+
+	shuffle(array) {
+		var currentIndex = array.length, temporaryValue, randomIndex;
+	  
+		// While there remain elements to shuffle...
+		while (0 !== currentIndex) {
+	  
+		  // Pick a remaining element...
+		  randomIndex = Math.floor(Math.random() * currentIndex);
+		  currentIndex -= 1;
+	  
+		  // And swap it with the current element.
+		  temporaryValue = array[currentIndex];
+		  array[currentIndex] = array[randomIndex];
+		  array[randomIndex] = temporaryValue;
+		}
+	  
+		return array;
+	  }
 }

@@ -13,14 +13,10 @@ import firebase from 'firebase/app';
   styleUrls: ['./party-lobby.component.scss']
 })
 export class PartyLobbyComponent implements OnInit {
-  party: Party = new Party('',null,[],false,null,[],'');
+  party: Party = new Party('',null,[],false,'',[],'',[]);
 	partySubject = new Subject<Party>();
 	partySubscription:Subscription;
-
 	user:string;
-
-	secondes:number;
-
 	constructor(private route: ActivatedRoute, private partyService:PartyService, private router:Router,private authService:AuthService) { }
 
 	ngOnInit(): void {
@@ -67,9 +63,10 @@ export class PartyLobbyComponent implements OnInit {
 	}
 
 	onLaunchParty(){
-    this.party.started = true;
-    this.saveParty();
-  }
+		this.partyService.startParty();
+		this.party.started = true;
+		this.saveParty();
+  	}
 
 	onDeleteParty(){
 		this.partyService.deleteParty();
