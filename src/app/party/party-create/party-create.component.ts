@@ -15,6 +15,7 @@ import { Subscription } from 'rxjs';
 })
 export class PartyCreateComponent implements OnInit {
 	errorMsg:string;
+	errorMsgRequest:string;
 
 	cards: Card[];
 	cardsSubscription: Subscription;
@@ -45,8 +46,13 @@ export class PartyCreateComponent implements OnInit {
 		const cards = this.createPartyForm.get('cardsSelected').value;
 		const numberOfPlayers = cards.length-3;
 		
-		this.partyService.newParty(code,cards,numberOfPlayers);
-		this.router.navigate(['/party/lobby']);
+		this.partyService.newParty(code,cards,numberOfPlayers).subscribe((result) =>{
+			if(result[0]){
+				this.errorMsgRequest = result[1];
+			}else{
+				this.router.navigate(['/party/lobby']);
+			}
+		});
 	}
 
 	onSelect(){

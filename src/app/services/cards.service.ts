@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { Card } from '../models/card.model';
 import firebase from 'firebase/app';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Conf } from '../conf';
 
 import 'firebase/database';

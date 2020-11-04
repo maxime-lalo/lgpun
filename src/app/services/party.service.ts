@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { Party } from '../models/party.model';
 import { AuthService } from '../services/auth.service';
-
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Conf } from '../conf';
 import firebase from 'firebase/app';
 import 'firebase/database';
 import 'firebase/storage';
@@ -18,38 +18,25 @@ export class PartyService {
 
 	alreadyExists:boolean = false;
 
-	constructor(private authService:AuthService) { 
-		this.getParties();
-	}
-
-	emitParties(){
-		this.partiesSubject.next(this.parties);
-	}
-
-	saveParties(){
-		firebase.database().ref('/parties').set(this.parties);
-	}
+	requestHeaders = new HttpHeaders({ 
+		'Access-Control-Allow-Origin':'*'
+	});
+	constructor(private authService:AuthService,private http:HttpClient) {}
 
 	getParties(){
-		firebase.database().ref('/parties').on('value', (data: DataSnapshot) => {
-			this.parties = data.val() ? data.val() : [];
-			this.emitParties();
-		});
+		return this.http.get<Party[]>(Conf.apiEndpoint + "/parties",{'headers':this.requestHeaders});
 	}
 
-	newParty(code:string, cards:number[], numberOfPlayers:number):void{
+	newParty(code:string, cards:number[], numberOfPlayers:number):Observable<any>{
 		const uid = this.authService.getCurrentUser().uid;
-		const pseudo = this.authService.getCurrentUser().displayName;
-		firebase.database().ref('users/' + uid + '/party').once('value').then(s =>{
-			if (!s.exists()) {
-				let party = new Party(code,numberOfPlayers,cards,false,'',[{"id":uid,"pseudo":pseudo}],uid,[],'',false);
+		let partyObject = {
+			"code" : code,
+			"cards": cards,
+			"numberOfPlayers": numberOfPlayers,
+			"creator": uid
+		};
 
-				firebase.database().ref('/parties/' + code).set(party);
-				firebase.database().ref('/users/' + uid + '/party').set({
-					"code":code
-				});
-			}
-		})
+		return this.http.request('POST',Conf.apiEndpoint + '/parties',{'headers':this.requestHeaders,'body':partyObject});
 	}
 
 	joinParty(partyCode:string){

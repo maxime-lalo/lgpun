@@ -29,7 +29,6 @@ export class PartyJoinComponent implements OnInit {
 		this.partiesSubscription = this.partyService.partiesSubject.subscribe( (parties: Party[]) => {
 			this.parties = parties;
 		});
-		this.partyService.emitParties();
 	}
 
 	onJoinParty(){
