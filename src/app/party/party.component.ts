@@ -13,7 +13,7 @@ import firebase from 'firebase/app';
 	styleUrls: ['./party.component.scss']
 })
 export class PartyComponent implements OnInit, OnDestroy {
-	party: Party = new Party('',null,[],false,'',[],'',[]);
+	party: Party = new Party('',null,[],false,'',[],'',[],'',false);
 	partySubject = new Subject<Party>();
 	partySubscription:Subscription;
 
@@ -58,5 +58,61 @@ export class PartyComponent implements OnInit, OnDestroy {
 				}));
 			}
 		}));
+	}
+
+	onPlay(targetUser:string){
+		if(this.party.turn == this.user){
+			let player;
+			let playerId;
+			for(let i = 0; i < this.party.players.length;i++){
+				if (this.party.players[i].id == this.user) {
+					playerId = i;
+					player = this.party.players[i];
+				}
+			}
+
+			let playerTarget;
+			let playerTargetId;
+			for(let i = 0; i < this.party.players.length;i++){
+				if (this.party.players[i].id == targetUser) {
+					playerTargetId = i;
+					playerTarget = this.party.players[i];
+				}
+			}
+			switch(player.card.id){
+				// Doppel
+				case 0:
+					break;
+				// Loup
+				case 1:
+					break;
+				// Sbire
+				case 2:
+					break;
+				// Franc-maçon
+				case 3:
+					break;
+				// Voyante
+				case 4:
+					break;
+				// Voleur
+				case 5:
+					firebase.database().ref('parties/' + this.party.code + '/players/' + playerId + '/newCard').set(playerTarget.newCard);
+					firebase.database().ref('parties/' + this.party.code + '/players/' + playerTargetId + '/newCard').set(player.newCard);
+					this.partyService.nextTurn(this.party.code);
+					break;
+				// Noiseuse
+				case 6:
+					break;
+				// Soulard
+				case 7:
+					break;
+				// Insomniaque
+				case 8:
+					break;
+			}
+		}else{
+
+		}
 	}
 }

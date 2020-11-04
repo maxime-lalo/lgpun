@@ -42,7 +42,7 @@ export class PartyService {
 		const pseudo = this.authService.getCurrentUser().displayName;
 		firebase.database().ref('users/' + uid + '/party').once('value').then(s =>{
 			if (!s.exists()) {
-				let party = new Party(code,numberOfPlayers,cards,false,'',[{"id":uid,"pseudo":pseudo}],uid,[]);
+				let party = new Party(code,numberOfPlayers,cards,false,'',[{"id":uid,"pseudo":pseudo}],uid,[],'',false);
 
 				firebase.database().ref('/parties/' + code).set(party);
 				firebase.database().ref('/users/' + uid + '/party').set({
@@ -108,16 +108,19 @@ export class PartyService {
 
 	startParty(){
 		const uid = this.authService.getCurrentUser().uid;
+		console.log(uid);
 		firebase.database().ref('users/' + uid + '/party').once('value', (snapshot) =>{
 			if(snapshot.exists()){
 				let partyCode = snapshot.val().code;
 				this.shuffleCards(partyCode);
+				this.nextTurn(partyCode);
 			}
 		});
 		
 	}
 
 	shuffleCards(partyCode:string){
+		console.log('shuffling cards');
 		let party = null;
 		firebase.database().ref('parties/' + partyCode).once('value',(snapshot2) =>{
 			party = snapshot2.val();
@@ -130,11 +133,36 @@ export class PartyService {
 							firebase.database().ref('/parties/' + partyCode + '/notUsedCards/' + i).set(card);
 						}else{
 							party.players[i-3].card = card;
+							party.players[i-3].newCard = card;
 							firebase.database().ref('/parties/' + partyCode + '/players/' + (i-3)).set(party.players[i-3]);
 						}
 					}
 				});
 			}
+
+			let order = [];
+			firebase.database().ref('parties/' + partyCode + '/players').once('value',(snapshot2) =>{
+				let players = snapshot2.val();
+				let swapped = 1;
+				while(swapped == 1){
+					for(let i = 0; i < (players.length - 1); i++){
+						swapped = 0;
+						if (players[i].card.position >= players[i+1].card.position) {
+							let temp = players[i];
+							players[i] = players[i+1];
+							players[i+1] = players[i];
+							swapped = 1;
+						}
+					}
+				}
+
+				for(let i = 0; i < (players.length - 1); i++){
+					order[i] = players[i].id;
+				}
+				console.log(order);
+
+				firebase.database().ref('parties/' + partyCode + '/order').set(order);
+			});
 		});
 	}
 
@@ -155,5 +183,9 @@ export class PartyService {
 		}
 	  
 		return array;
-	  }
+	}
+
+	nextTurn(partyCode:string){
+		let party = null;
+	}
 }

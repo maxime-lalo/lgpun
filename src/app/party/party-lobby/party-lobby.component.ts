@@ -13,7 +13,7 @@ import firebase from 'firebase/app';
   styleUrls: ['./party-lobby.component.scss']
 })
 export class PartyLobbyComponent implements OnInit {
-  party: Party = new Party('',null,[],false,'',[],'',[]);
+	party: Party = new Party('',null,[],false,'',[],'',[],'',false);
 	partySubject = new Subject<Party>();
 	partySubscription:Subscription;
 	user:string;
@@ -32,22 +32,22 @@ export class PartyLobbyComponent implements OnInit {
 
 	emitParty(){
 		this.partySubject.next(this.party);
-  }
-  
-  saveParty(){
-    firebase.database().ref('/parties/' + this.party.code).set(this.party);
-    this.emitParty();
-  }
+	}
+
+	saveParty(){
+		firebase.database().ref('/parties/' + this.party.code).set(this.party);
+		this.emitParty();
+	}
   
 	getParty(user){
 		firebase.database().ref('/users/' + user + '/party').on('value',(s => {
 			if (s.exists()) {
 				firebase.database().ref('/parties/' + s.val().code).on('value',(party => {
 					if(party.exists()){
-            this.party = party.val();
-            if(this.party.started){
-              this.router.navigate(['party']);
-            }
+            			this.party = party.val();
+			            if(this.party.started){
+			              //this.router.navigate(['party']);
+			            }
 						this.emitParty();
 					}
 				}));
@@ -64,7 +64,7 @@ export class PartyLobbyComponent implements OnInit {
 
 	onLaunchParty(){
 		this.partyService.startParty();
-		this.party.started = true;
+		//this.party.started = true;
 		this.saveParty();
   	}
 

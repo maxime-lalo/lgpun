@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Party } from '../../models/party.model';
+
 import { PartyService } from '../../services/party.service';
 import { CardsService } from '../../services/cards.service';
 import { AuthService } from '../../services/auth.service';
@@ -22,14 +22,12 @@ export class PartyCreateComponent implements OnInit {
 	createPartyForm: FormGroup;
 	canSubmit: boolean = false;
 	constructor(private formBuilder: FormBuilder, private partyService: PartyService,
-              private router: Router, private cardsService: CardsService, private authService: AuthService) { }
+              private router: Router, private cardsService: CardsService) { }
 
 	initForm() {
-		this.cardsService.getAvailableCards();
-		this.cardsSubscription = this.cardsService.cardsSubject.subscribe( (cards: Card[]) => {
+		this.cardsSubscription = this.cardsService.getAvailableCards().subscribe( (cards: Card[]) => {
 			this.cards = cards;
 		});
-		this.cardsService.emitCards();
 
 		this.createPartyForm = this.formBuilder.group({
 			partyCode: ['',[Validators.required, Validators.pattern(/[0-9a-zA-Z]{4,6}/)]],

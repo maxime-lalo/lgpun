@@ -56,7 +56,8 @@ import { PartyLobbyComponent } from './party/party-lobby/party-lobby.component';
     BrowserModule,
     AppRoutingModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    HttpClientModule
   ],
   exports: [
     HeaderComponent

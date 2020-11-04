@@ -24,10 +24,10 @@
                 <div class="cardNotUsedDisplay">
                     <img 
                         src="https://firebasestorage.googleapis.com/v0/b/lgpun-20cfa.appspot.com/o/roles%2Fdos.jpg?alt=media&token=6ca2284a-2638-42da-992f-4564e49f2b39" 
-                        class="w-100 cardImage" *ngIf="player.id != user">
+                        class="w-100 cardImage" *ngIf="player.id != user || party.cardsHidden" (click)="onPlay(player.id)">
                     <img
                     [src]="player.card.photo"
-                    class="w-100" *ngIf="player.id == user">
+                    class="w-100" *ngIf="player.id == user && !party.cardsHidden">
                 </div>
             </div>
         </div>
@@ -40,7 +40,7 @@
         </div>
     </div>
     <div class="row justify-content-center">
-        <div class="col-lg-1 mr-4" *ngFor="let nbr of loopNumber">
+        <div class="col-lg-1 mr-4" *ngFor="let notUsedCard of party.notUsedCards">
             <div class="cardNotUsedDisplay">
                 <img 
                     src="https://firebasestorage.googleapis.com/v0/b/lgpun-20cfa.appspot.com/o/roles%2Fdos.jpg?alt=media&token=6ca2284a-2638-42da-992f-4564e49f2b39" 
