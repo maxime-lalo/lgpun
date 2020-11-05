@@ -21,38 +21,10 @@ export class PartyLobbyComponent implements OnInit {
 
 	ngOnInit(): void {
 		const uid = this.authService.getCurrentUser().uid;
-		this.user = uid;
 
-		this.getParty(uid);
-		this.partySubject.subscribe((party:Party) =>{
-			this.party = party;
+		this.partyService.getUserParty().subscribe((result) => {
+			this.party = result;
 		});
-		this.emitParty();
-	}
-
-	emitParty(){
-		this.partySubject.next(this.party);
-	}
-
-	saveParty(){
-		firebase.database().ref('/parties/' + this.party.code).set(this.party);
-		this.emitParty();
-	}
-  
-	getParty(user){
-		firebase.database().ref('/users/' + user + '/party').on('value',(s => {
-			if (s.exists()) {
-				firebase.database().ref('/parties/' + s.val().code).on('value',(party => {
-					if(party.exists()){
-            			this.party = party.val();
-			            if(this.party.started){
-			              //this.router.navigate(['party']);
-			            }
-						this.emitParty();
-					}
-				}));
-			}
-		}));
 	}
 
 	ngOnDestroy(){}
@@ -64,12 +36,9 @@ export class PartyLobbyComponent implements OnInit {
 
 	onLaunchParty(){
 		this.partyService.startParty();
-		//this.party.started = true;
-		this.saveParty();
   	}
 
 	onDeleteParty(){
 		this.partyService.deleteParty();
-		this.emitParty();
 	}
 }

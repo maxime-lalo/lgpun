@@ -39,6 +39,11 @@ export class PartyService {
 		return this.http.request('POST',Conf.apiEndpoint + '/parties',{'headers':this.requestHeaders,'body':partyObject});
 	}
 
+	getUserParty(){
+		const uid = this.authService.getCurrentUser().uid;
+		return this.http.get<Party>(Conf.apiEndpoint + "/parties/getByUser/" + uid,{'headers':this.requestHeaders});
+	}
+	
 	joinParty(partyCode:string){
 		const uid = this.authService.getCurrentUser().uid;
 		const pseudo = this.authService.getCurrentUser().displayName;
