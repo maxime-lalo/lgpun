@@ -46,19 +46,11 @@ export class PartyService {
 	
 	joinParty(partyCode:string){
 		const uid = this.authService.getCurrentUser().uid;
-		const pseudo = this.authService.getCurrentUser().displayName;
-		firebase.database().ref('users/' + uid + '/party').set({
-			"code":partyCode,
-		});
-
-		let url = 'parties/' + partyCode + '/players';
-		firebase.database().ref(url).once('value', (snapshot) => {
-			if (snapshot.exists()) {
-				let players = snapshot.val();
-				players.push({"id":uid,"pseudo":pseudo});
-				firebase.database().ref(url).set(players);
-			}
-		});
+		let objJoin = {
+			"party" : partyCode,
+			"user" : uid
+		};
+		return this.http.request('POST',Conf.apiEndpoint + "/party/join",{'headers':this.requestHeaders,'body':objJoin});
 	}
 
 	quitParty(){

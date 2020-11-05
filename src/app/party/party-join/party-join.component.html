@@ -20,14 +20,14 @@
     <ul class="list-group">
       <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let party of parties">
         {{ party.code }}
-        <span class="badge badge-primary badge-pill" *ngIf="party.players && party.players.length != party.numberOfPlayers">
-          {{ party.players.length ? "0":"0" }}/{{ party.numberOfPlayers }}
+        <span class="badge badge-primary badge-pill" *ngIf="party.players && party.players.length != party.cards.length">
+          {{ party.players.length }}/{{ party.cards.length }}
         </span>
-        <span class="badge badge-danger badge-pill" *ngIf="party.players && party.players.length == party.numberOfPlayers">
-          {{ party.players.length ? "0":"0" }}/{{ party.numberOfPlayers }}
+        <span class="badge badge-danger badge-pill" *ngIf="party.players && party.players.length == party.cards.length">
+          {{ party.players.length }}/{{ party.cards.length }}
         </span>
         <span class="float-right">
-          <a routerLink="/party/{{ party.code }}" class="btn btn-success">Rejoindre la partie</a>
+          <a (click)="joinParty(party.code)" class="btn btn-success" [disabled]="party.players.length == party.cards.length">Rejoindre la partie</a>
         </span>
       </li>
     </ul>

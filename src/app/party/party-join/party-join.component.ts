@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Party } from '../../models/party.model';
 import { PartyService } from '../../services/party.service';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription, Subject } from 'rxjs';
 import { Router } from '@angular/router';
 
 @Component({
@@ -14,8 +14,7 @@ export class PartyJoinComponent implements OnInit, OnDestroy {
 	joinPartyForm: FormGroup;
 	parties: Party[];
 
-	partiesSubscription: Subscription;
-
+	interval;
 	constructor(private formBuilder: FormBuilder, private partyService: PartyService,private router: Router) { }
 
 	initForm() {
@@ -27,22 +26,25 @@ export class PartyJoinComponent implements OnInit, OnDestroy {
 	ngOnInit(): void {
 		this.initForm();
 
-		this.partiesSubscription = this.partyService.getParties().subscribe( (result) => {
-			this.parties = result;
-		});
-
-		setInterval(() => { 
-			this.partiesSubscription;
+		this.interval = setInterval(() => { 
+			this.partyService.getParties().subscribe( (result) => {
+				this.parties = result;
+			});
 		}, 1000);
 	}
 
 	ngOnDestroy():void{
-		this.partiesSubscription.unsubscribe();
+		clearInterval(this.interval);
 	}
 
 	onJoinParty(){
 		let partyCode = this.joinPartyForm.get('partyCode').value;
-		this.partyService.joinParty(partyCode);
-		this.router.navigate(['/party/lobby']);
+		this.joinParty(partyCode);
+	}
+
+	joinParty(partyCode){
+		this.partyService.joinParty(partyCode).subscribe( (result) => {
+			//this.router.navigate(['/party/lobby']);
+		});
 	}
 }
