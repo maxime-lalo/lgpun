@@ -25,7 +25,7 @@ export class PartyCreateComponent implements OnInit {
 	constructor(private formBuilder: FormBuilder, private partyService: PartyService,private router: Router, private cardsService: CardsService) { }
 
 	initForm() {
-		this.cardsSubscription = this.cardsService.getAvailableCards().subscribe( (cards: Card[]) => {
+		this.cardsSubscription = this.cardsService.getCards().subscribe( (cards: Card[]) => {
 			this.cards = cards;
 		});
 

@@ -2,8 +2,8 @@
     <div class="col-lg-10">
         <h2 class="text-center">
             Partie {{ party.code }} en cours
-            <span class="float-right green" *ngIf="party.turn == user">C'est votre tour !</span>
         </h2>
+        <span class="float-right green" *ngIf="party.turn.id_firebase == user">C'est votre tour !</span>
     </div>
 </div>
 <div class="row justify-content-center">

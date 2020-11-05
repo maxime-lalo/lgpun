@@ -12,30 +12,43 @@ import firebase from 'firebase/app';
   templateUrl: './party-lobby.component.html',
   styleUrls: ['./party-lobby.component.scss']
 })
-export class PartyLobbyComponent implements OnInit {
-	party: Party = new Party('',null,[],false,'',[],'',[],'',false);
+export class PartyLobbyComponent implements OnInit,OnDestroy {
+	party;
 	partySubject = new Subject<Party>();
 	partySubscription:Subscription;
 	user:string;
+
+	interval;
+
 	constructor(private route: ActivatedRoute, private partyService:PartyService, private router:Router,private authService:AuthService) { }
 
 	ngOnInit(): void {
 		const uid = this.authService.getCurrentUser().uid;
+		this.user = uid;
+		this.interval = setInterval(() => {
+			this.partyService.getUserParty().subscribe((result) => {
+				this.party = result;
+				if(this.party.started){
+					this.router.navigate(['/party']);
+				}
+			});
+		},1000);
+	}
 
-		this.partyService.getUserParty().subscribe((result) => {
-			this.party = result;
+	ngOnDestroy(){
+		clearInterval(this.interval);
+	}
+
+	onQuitParty(){
+		this.partyService.quitParty().subscribe( (result) => {
+			this.router.navigate(['/party/join']);
 		});
 	}
 
-	ngOnDestroy(){}
-
-	onQuitParty(){
-		this.partyService.quitParty();
-		this.router.navigate(['/party/join']);
-	}
-
 	onLaunchParty(){
-		this.partyService.startParty();
+		this.partyService.startParty(this.party.code).subscribe( (result) => {
+
+		});
   	}
 
 	onDeleteParty(){

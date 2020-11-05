@@ -35,6 +35,7 @@ import { PartyCreateComponent } from './party/party-create/party-create.componen
 import { PartyJoinComponent } from './party/party-join/party-join.component';
 import { HomeComponent } from './home/home.component';
 import { PartyLobbyComponent } from './party/party-lobby/party-lobby.component';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @NgModule({
   declarations: [
@@ -57,7 +58,8 @@ import { PartyLobbyComponent } from './party/party-lobby/party-lobby.component';
     AppRoutingModule,
     FormsModule,
     ReactiveFormsModule,
-    HttpClientModule
+    HttpClientModule,
+    FontAwesomeModule
   ],
   exports: [
     HeaderComponent
