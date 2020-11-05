@@ -1,51 +1,61 @@
-<div class="row justify-content-center">
-    <div class="col-lg-10">
-        <h2 class="text-center">
-            Partie {{ party.code }} en cours
-        </h2>
-        <span class="float-right green" *ngIf="party.turn.id_firebase == user">C'est votre tour !</span>
+<div *ngIf="party">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h2 class="text-center">
+                Partie {{ party.code }} en cours
+            </h2>
+            <span class="float-right green" *ngIf="party.turn && party.turn.id_firebase == user">C'est votre tour !</span>
+        </div>
     </div>
-</div>
-<div class="row justify-content-center">
-    <div *ngFor="let player of party.players" class="text-center justify-content-center">
-        <span class="text-center" *ngIf="player.id == user">
-            Vous êtes <strong>{{ player.card.name }}</strong>
-            <br>
-            {{ player.card.help }}
-        </span>
+    <div class="row justify-content-center">
+        <div *ngFor="let player of party.players" class="text-center justify-content-center">
+            <span class="text-center" *ngIf="player.id_firebase == user">
+                Vous êtes <strong>{{ player.beginning_card.name }}</strong>
+                <br>
+                {{ player.beginning_card.help }}
+            </span>
+        </div>
     </div>
-</div>
-<div class="row justify-content-center">
-    <div class="col-lg-6">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="row justify-content-center">
+                <div class="col-lg-2" *ngFor="let player of party.players">
+                    <p class="text-center font-weight-bold mb-1" *ngIf="player.id_firebase != user">{{ player.pseudo }}</p>
+                    <p class="text-center font-weight-bold mb-1" *ngIf="player.id_firebase == user">Vous</p>
+                    <div class="cardNotUsedDisplay">
+                        <img 
+                            src="https://firebasestorage.googleapis.com/v0/b/lgpun-20cfa.appspot.com/o/roles%2Fdos.jpg?alt=media&token=6ca2284a-2638-42da-992f-4564e49f2b39" 
+                            class="w-100 cardImage" *ngIf="player.id_firebase != user || party.cardsHidden" (click)="onPlay(player.id)">
+                        <img
+                        [src]="player.beginning_card.photo"
+                        class="w-100" *ngIf="player.id_firebase == user && !party.cardsHidden">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="cardsNotUsed mt-4">
         <div class="row justify-content-center">
-            <div class="col-lg-2" *ngFor="let player of party.players">
-                <p class="text-center font-weight-bold mb-1" *ngIf="player.id != user">{{ player.pseudo }}</p>
-                <p class="text-center font-weight-bold mb-1" *ngIf="player.id == user">Vous</p>
+            <div class="col-lg-12">
+                <h2 class="text-center">Cartes non utilisées</h2>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-1 mr-4" *ngFor="let notUsedCard of party.notUsedCards">
                 <div class="cardNotUsedDisplay">
                     <img 
                         src="https://firebasestorage.googleapis.com/v0/b/lgpun-20cfa.appspot.com/o/roles%2Fdos.jpg?alt=media&token=6ca2284a-2638-42da-992f-4564e49f2b39" 
-                        class="w-100 cardImage" *ngIf="player.id != user || party.cardsHidden" (click)="onPlay(player.id)">
-                    <img
-                    [src]="player.card.photo"
-                    class="w-100" *ngIf="player.id == user && !party.cardsHidden">
+                        class="w-100 cardImage">
                 </div>
             </div>
         </div>
     </div>
 </div>
-<div class="cardsNotUsed mt-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-12">
-            <h2 class="text-center">Cartes non utilisées</h2>
-        </div>
-    </div>
-    <div class="row justify-content-center">
-        <div class="col-lg-1 mr-4" *ngFor="let notUsedCard of party.notUsedCards">
-            <div class="cardNotUsedDisplay">
-                <img 
-                    src="https://firebasestorage.googleapis.com/v0/b/lgpun-20cfa.appspot.com/o/roles%2Fdos.jpg?alt=media&token=6ca2284a-2638-42da-992f-4564e49f2b39" 
-                    class="w-100 cardImage">
-            </div>
-        </div>
-    </div>
+<div class="component-loader" *ngIf="!party">
+	<div>
+		Chargement de la partie
+	</div>
+	<div>
+		<i class="fas fa-circle-notch fa-spin"></i>
+	</div>
 </div>

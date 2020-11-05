@@ -25,6 +25,7 @@ export class PartyComponent implements OnInit, OnDestroy {
 		this.interval = setInterval(() =>{
 			this.partyService.getUserParty().subscribe((party:Party) =>{
 				this.party = party;
+				console.log(party.notUsedCards);
 			});
 		},1000);
 	}
