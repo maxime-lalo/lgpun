@@ -1,10 +1,19 @@
 <div *ngIf="party">
+
+    <div class="progress" *ngIf="nextTurnCounter" style="border-radius:0px;position:absolute;width:100%;left:0px">
+        <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" role="progressbar" [ngStyle]="{width: (100 - ((triggerNextTurnCounter+1)*10)+'%')}" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+            
+        </div>
+    </div>
+    <br>
+    <div class="row justify-content-center" *ngIf="counterLaunched">
+        Les cartes seront cachées dans {{ hiddenCardsCounter+1 }} secondes
+    </div>
     <div class="row justify-content-center">
         <div class="col-lg-10">
             <h2 class="text-center">
                 Partie {{ party.code }} en cours
             </h2>
-            <span class="float-right green" *ngIf="party.turn && party.turn.id_firebase == user">C'est votre tour !</span>
         </div>
     </div>
     <div class="row justify-content-center">
@@ -22,13 +31,21 @@
                 <div class="col-lg-2" *ngFor="let player of party.players">
                     <p class="text-center font-weight-bold mb-1" *ngIf="player.id_firebase != user">{{ player.pseudo }}</p>
                     <p class="text-center font-weight-bold mb-1" *ngIf="player.id_firebase == user">Vous</p>
-                    <div class="cardNotUsedDisplay">
+                    <div>
                         <img 
                             src="https://firebasestorage.googleapis.com/v0/b/lgpun-20cfa.appspot.com/o/roles%2Fdos.jpg?alt=media&token=6ca2284a-2638-42da-992f-4564e49f2b39" 
-                            class="w-100 cardImage" *ngIf="player.id_firebase != user || party.cardsHidden" (click)="onPlay(player.id)">
+                            class="w-100 card" 
+                            [ngClass]="{'cardHover': (canActivateCards && player.id_firebase != user)}"  
+                            *ngIf="(player.id_firebase != user || party.cardsHidden) && firstCardToReveal != player.id" 
+                            (click)="(canActivateCards && player.id_firebase != user) && onSelectCard(player.id,'player')">
                         <img
-                        [src]="player.beginning_card.photo"
-                        class="w-100" *ngIf="player.id_firebase == user && !party.cardsHidden">
+                            [src]="player.beginning_card.photo"
+                            class="w-100 card" 
+                            *ngIf="player.id_firebase == user && !party.cardsHidden">
+                        <img
+                            [src]="player.ending_card.photo"
+                            class="w-100 card" 
+                            *ngIf="firstCardToReveal == player.id">
                     </div>
                 </div>
             </div>
@@ -41,14 +58,27 @@
             </div>
         </div>
         <div class="row justify-content-center">
-            <div class="col-lg-1 mr-4" *ngFor="let notUsedCard of party.notUsedCards">
-                <div class="cardNotUsedDisplay">
-                    <img 
-                        src="https://firebasestorage.googleapis.com/v0/b/lgpun-20cfa.appspot.com/o/roles%2Fdos.jpg?alt=media&token=6ca2284a-2638-42da-992f-4564e49f2b39" 
-                        class="w-100 cardImage">
+            <div class="col-lg-6">
+                <div class="row justify-content-center">
+                    <div class="col-lg-2" *ngFor="let notUsedCard of party.notUsedCards">
+                        <div>
+                            <img 
+                                src="https://firebasestorage.googleapis.com/v0/b/lgpun-20cfa.appspot.com/o/roles%2Fdos.jpg?alt=media&token=6ca2284a-2638-42da-992f-4564e49f2b39" 
+                                class="w-100 card" [ngClass]="{'cardHover': canActivateNotUsedCards}" 
+                                (click)="canActivateNotUsedCards && onSelectCard(notUsedCard.id,'notUsed')"
+                                *ngIf="firstCardToReveal != notUsedCard.id && secondCardToReveal != notUsedCard.id">
+                            <img 
+                                [src]="notUsedCard.photo" 
+                                class="w-100 card" [ngClass]="{'cardHover': canActivateNotUsedCards}" 
+                                *ngIf="firstCardToReveal == notUsedCard.id || secondCardToReveal == notUsedCard.id">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+    <div style="position:absolute;bottom:0;right:5px">
+        <input type="range" min="0" max="1" [(ngModel)]="volume" step="0.01" id="volume" (input)="onChangeVolume()">
     </div>
 </div>
 <div class="component-loader" *ngIf="!party">

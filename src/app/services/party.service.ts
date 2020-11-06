@@ -60,4 +60,8 @@ export class PartyService {
 	startParty(partyCode){
 		return this.http.request('POST',Conf.apiEndpoint + "/party/start",{'headers':this.requestHeaders,'body':{'party' : partyCode}});
 	}
+
+	hideCards(partyCode){
+		this.http.request('POST',Conf.apiEndpoint + "/party/hideCards",{'headers':this.requestHeaders,'body':{'party' : partyCode}}).subscribe();
+	}
 }
