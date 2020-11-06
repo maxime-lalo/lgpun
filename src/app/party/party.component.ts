@@ -9,6 +9,7 @@ import { Howl, Howler } from 'howler';
 import Swal from 'sweetalert2/dist/sweetalert2.all.js';
 import 'sweetalert2/src/sweetalert2.scss'
 import firebase from 'firebase/app';
+import { textSpanIntersectsWithTextSpan } from 'typescript';
 
 @Component({
 	selector: 'app-party',
@@ -40,6 +41,7 @@ export class PartyComponent implements OnInit, OnDestroy {
 	noiseuseFirstCard: number = -1;
 
 	doppelCard: number = -1;
+	doppelReveal: number = -1;
 	constructor(private route: ActivatedRoute, private partyService:PartyService, private router:Router,private authService:AuthService) { }
 
 	ngOnInit(): void {
@@ -76,7 +78,9 @@ export class PartyComponent implements OnInit, OnDestroy {
 				title: 'C\'est votre tour ! ',
 				text: card.help,
 				icon: 'success',
-				willClose: this.play(card.id)
+				willClose: () => {
+					this.play(card.id)
+				}
 			});
 			this.swalSent = true;
 		}
@@ -104,22 +108,31 @@ export class PartyComponent implements OnInit, OnDestroy {
 					case 1:
 						this.party.players.forEach((player) =>{
 							if(player.id == card){
+								this.doppelReveal = player.id;
 								Swal.fire({
 									title: "Vous avez copié " + player.pseudo + " ! ",
-									html: player.pseudo + " est <strong>" + player['beginning_card'].name + "</strong> si c'est une action de nuit, fait là maintenant, sinon attend ton tour ou ton réveil<br><br>Voici le rôle de <strong>" + player['beginning_card'].name + "</strong> :<br>" + player['beginning_card'].help
+									html: player.pseudo + " est <strong>" + player['beginning_card'].name + "</strong> si c'est une action de nuit, fait là maintenant, sinon attend ton tour ou ton réveil<br><br>Voici le rôle de <strong>" + player['beginning_card'].name + "</strong> :<br>" + player['beginning_card'].help,
+									willClose: () => {
+										this.doppelCard = player['beginning_card'].id;
+										this.canActivateCards = false;
+										this.canActivateNotUsedCards = false;
+										this.play(player['beginning_card'].id);
+									}
 								}); 
-								this.doppelCard = player['beginning_card'].id;
-								this.canActivateCards = false;
-								this.canActivateNotUsedCards = false;
-								this.play(player['beginning_card'].id);
 							}
 						})
 						break;
 					// LG
 					case 2: case 3:
+						this.firstCardToReveal = card;
+						this.canActivateNotUsedCards = false;
+						this.triggerNextTurn();
 						break;
 					// Francs maçons
 					case 5: case 6:
+						this.firstCardToReveal = card;
+						this.canActivateNotUsedCards = false;
+						this.triggerNextTurn();
 						break;
 					// Voyante
 					case 7:
@@ -199,15 +212,55 @@ export class PartyComponent implements OnInit, OnDestroy {
 		switch(type){
 			// Doppel
 			case 1:
-				this.canActivateCards = true;
+				if(this.party.doppelCard != null && this.party.doppelCard.id == 11){
+					this.play(11);
+				}else{
+					this.canActivateCards = true;
+				}
 				break;
 			// LG
 			case 2: case 3:
-				this.canActivateNotUsedCards = true;
+				this.partyService.isAlone(this.party.code,'wolf').subscribe( (result:any) => {
+					if(result.length > 1){
+						let htmlFormatted = "";
+						result.forEach( (player) => {
+							if(player.id_firebase != this.user){
+								htmlFormatted += player.pseudo + " est également loup garou<br>";
+							}
+						});
+						Swal.fire({
+							title: "Vous n'êtes pas seul...",
+							html: htmlFormatted,
+							willClose: () => {
+								this.triggerNextTurn();
+							}
+						});
+					}else{
+						this.canActivateNotUsedCards = true;
+					}
+				});
 				break;
 			// Francs maçons
 			case 5: case 6:
-				this.canActivateNotUsedCards = true;
+				this.partyService.isAlone(this.party.code,'francs').subscribe( (result:any) => {
+					if(result.length > 1){
+						let htmlFormatted = "";
+						result.forEach( (player) => {
+							if(player.id_firebase != this.user){
+								htmlFormatted += player.pseudo + " est également <strong>Franc-maçon</strong><br>";
+							}
+						});
+						Swal.fire({
+							title: "Vous n'êtes pas seul...",
+							html: htmlFormatted,
+							willClose: () => {
+								this.triggerNextTurn();
+							}
+						});
+					}else{
+						this.canActivateNotUsedCards = true;
+					}
+				});
 				break;
 			// Voyante
 			case 7:
@@ -224,8 +277,37 @@ export class PartyComponent implements OnInit, OnDestroy {
 				break;
 			// Soulard
 			case 10:
-				this.canActivateCards = false;
 				this.canActivateNotUsedCards = true;
+				break;
+			// Insomniaque
+			case 11:
+				if(this.doppelCard == -1){
+					let cardToSee = null;
+					this.party.players.forEach( (player) => {
+						
+						if (player.id_firebase == this.user) {
+							cardToSee = player.id;
+						}
+					});
+					this.firstCardToReveal = cardToSee;
+					this.triggerNextTurn();
+				}else{
+					let cardToSee = null;
+					this.party.players.forEach( (player) => {
+						if (player.id_firebase == this.user) {
+							cardToSee = player.id;
+						}
+					});
+					console.log(cardToSee);
+					Swal.fire({
+						title: "Vous avez copié l'insomniaque !",
+						html: "Vous allez pouvoir voir votre carte avant le réveil afin de savoir dans quel camp vous vous situez",
+						willClose: () => {
+							this.firstCardToReveal = cardToSee;
+							this.triggerNextTurn();
+						}
+					})
+				}
 				break;
 			default:
 				break;
@@ -266,11 +348,12 @@ export class PartyComponent implements OnInit, OnDestroy {
 		this.triggerNextTurnInterval = setInterval( () => {
 			this.triggerNextTurnCounter--;
 			if(this.triggerNextTurnCounter == 0){
-				// passer au tour suivant
+				this.partyService.nextTurn(this.party.code);
 			}
 			if(this.triggerNextTurnCounter < 0){
 				this.firstCardToReveal = -1;
 				this.secondCardToReveal = -1;
+				this.doppelReveal = -1;
 				this.nextTurnCounter = false;
 				clearInterval(this.triggerNextTurnInterval);
 				this.triggerNextTurnCounter = 9;

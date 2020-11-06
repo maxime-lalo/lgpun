@@ -36,7 +36,7 @@
                             src="https://firebasestorage.googleapis.com/v0/b/lgpun-20cfa.appspot.com/o/roles%2Fdos.jpg?alt=media&token=6ca2284a-2638-42da-992f-4564e49f2b39" 
                             class="w-100 card" 
                             [ngClass]="{'cardHover': (canActivateCards && player.id_firebase != user)}"  
-                            *ngIf="(player.id_firebase != user || party.cardsHidden) && firstCardToReveal != player.id" 
+                            *ngIf="(player.id_firebase != user || party.cardsHidden) && firstCardToReveal != player.id && doppelReveal != player.id" 
                             (click)="(canActivateCards && player.id_firebase != user) && onSelectCard(player.id,'player')">
                         <img
                             [src]="player.beginning_card.photo"
@@ -45,7 +45,7 @@
                         <img
                             [src]="player.ending_card.photo"
                             class="w-100 card" 
-                            *ngIf="firstCardToReveal == player.id">
+                            *ngIf="firstCardToReveal == player.id || doppelReveal == player.id">
                     </div>
                 </div>
             </div>

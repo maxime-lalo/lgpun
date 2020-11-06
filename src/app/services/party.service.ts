@@ -64,4 +64,12 @@ export class PartyService {
 	hideCards(partyCode){
 		this.http.request('POST',Conf.apiEndpoint + "/party/hideCards",{'headers':this.requestHeaders,'body':{'party' : partyCode}}).subscribe();
 	}
+
+	isAlone(partyCode,type){
+		return this.http.request('POST',Conf.apiEndpoint + "/party/isAlone",{'headers':this.requestHeaders,'body':{'party' : partyCode,'type':type}});
+	}
+
+	nextTurn(partyCode){
+		return this.http.request('POST',Conf.apiEndpoint + "/party/nextTurn",{'headers':this.requestHeaders,'body':{'party' : partyCode}}).subscribe();
+	}
 }
