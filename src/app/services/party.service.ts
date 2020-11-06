@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { Party } from '../models/party.model';
 import { AuthService } from '../services/auth.service';
-
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Conf } from '../conf';
 import firebase from 'firebase/app';
 import 'firebase/database';
 import 'firebase/storage';
@@ -13,80 +13,44 @@ import DataSnapshot = firebase.database.DataSnapshot;
 	providedIn: 'root'
 })
 export class PartyService {
-	parties: Party[] = [];
-	partiesSubject = new Subject<Party[]>();
-
-	alreadyExists:boolean = false;
-
-	constructor(private authService:AuthService) { 
-		this.getParties();
-	}
-
-	emitParties(){
-		this.partiesSubject.next(this.parties);
-	}
-
-	saveParties(){
-		firebase.database().ref('/parties').set(this.parties);
-	}
+	requestHeaders = new HttpHeaders({ 
+		'Access-Control-Allow-Origin':'*'
+	});
+	constructor(private authService:AuthService,private http:HttpClient) {}
 
 	getParties(){
-		firebase.database().ref('/parties').on('value', (data: DataSnapshot) => {
-			this.parties = data.val() ? data.val() : [];
-			this.emitParties();
-		});
+		return this.http.get<Party[]>(Conf.apiEndpoint + "/parties",{'headers':this.requestHeaders});
 	}
 
-	newParty(code:string, cards:number[], numberOfPlayers:number):void{
+	newParty(code:string, cards:number[], numberOfPlayers:number):Observable<any>{
 		const uid = this.authService.getCurrentUser().uid;
-		const pseudo = this.authService.getCurrentUser().displayName;
-		firebase.database().ref('users/' + uid + '/party').once('value').then(s =>{
-			if (!s.exists()) {
-				let party = new Party(code,numberOfPlayers,cards,false,'',[{"id":uid,"pseudo":pseudo}],uid,[]);
+		let partyObject = {
+			"code" : code,
+			"cards": cards,
+			"numberOfPlayers": numberOfPlayers,
+			"creator": uid
+		};
 
-				firebase.database().ref('/parties/' + code).set(party);
-				firebase.database().ref('/users/' + uid + '/party').set({
-					"code":code
-				});
-			}
-		})
+		return this.http.request('POST',Conf.apiEndpoint + '/parties',{'headers':this.requestHeaders,'body':partyObject});
 	}
 
+	getUserParty(){
+		const uid = this.authService.getCurrentUser().uid;
+		return this.http.get<Party>(Conf.apiEndpoint + "/parties/getByUser/" + uid,{'headers':this.requestHeaders});
+	}
+	
 	joinParty(partyCode:string){
 		const uid = this.authService.getCurrentUser().uid;
-		const pseudo = this.authService.getCurrentUser().displayName;
-		firebase.database().ref('users/' + uid + '/party').set({
-			"code":partyCode,
-		});
-
-		let url = 'parties/' + partyCode + '/players';
-		firebase.database().ref(url).once('value', (snapshot) => {
-			if (snapshot.exists()) {
-				let players = snapshot.val();
-				players.push({"id":uid,"pseudo":pseudo});
-				firebase.database().ref(url).set(players);
-			}
-		});
+		let objJoin = {
+			"party" : partyCode,
+			"user" : uid
+		};
+		return this.http.request('POST',Conf.apiEndpoint + "/party/join",{'headers':this.requestHeaders,'body':objJoin});
 	}
 
 	quitParty(){
 		const uid = this.authService.getCurrentUser().uid;
-		firebase.database().ref('users/' + uid + '/party').once('value', (snapshot) =>{
-			if(snapshot.exists()){
-				let partyCode = snapshot.val();
-				let urlParty = 'parties/' + partyCode.code + '/players';
-				firebase.database().ref(urlParty).once('value', (snapshot2) =>{
-					let players = snapshot2.val();
-					players.forEach( (player,index) =>{
-						if(player.id == uid){
-							players.splice(index,1);
-						}
-					});
-					firebase.database().ref(urlParty).set(players);
-					firebase.database().ref('users/' + uid).set([]);
-				});
-			}
-		});
+		return this.http.request('POST',Conf.apiEndpoint + "/party/quit",{'headers':this.requestHeaders,'body':{'user' : uid}});
 	}
 
 	deleteParty(){
@@ -106,54 +70,7 @@ export class PartyService {
 		});
 	}
 
-	startParty(){
-		const uid = this.authService.getCurrentUser().uid;
-		firebase.database().ref('users/' + uid + '/party').once('value', (snapshot) =>{
-			if(snapshot.exists()){
-				let partyCode = snapshot.val().code;
-				this.shuffleCards(partyCode);
-			}
-		});
-		
+	startParty(partyCode){
+		return this.http.request('POST',Conf.apiEndpoint + "/party/start",{'headers':this.requestHeaders,'body':{'party' : partyCode}});
 	}
-
-	shuffleCards(partyCode:string){
-		let party = null;
-		firebase.database().ref('parties/' + partyCode).once('value',(snapshot2) =>{
-			party = snapshot2.val();
-			this.shuffle(party.cards);
-			for(let i = 0; i < party.cards.length; i++){
-				firebase.database().ref('cards/' + party.cards[i]).once('value',(snapshot3) =>{
-					if(snapshot3.exists()){
-						let card = snapshot3.val();
-						if(i < 3){
-							firebase.database().ref('/parties/' + partyCode + '/notUsedCards/' + i).set(card);
-						}else{
-							party.players[i-3].card = card;
-							firebase.database().ref('/parties/' + partyCode + '/players/' + (i-3)).set(party.players[i-3]);
-						}
-					}
-				});
-			}
-		});
-	}
-
-	shuffle(array) {
-		var currentIndex = array.length, temporaryValue, randomIndex;
-	  
-		// While there remain elements to shuffle...
-		while (0 !== currentIndex) {
-	  
-		  // Pick a remaining element...
-		  randomIndex = Math.floor(Math.random() * currentIndex);
-		  currentIndex -= 1;
-	  
-		  // And swap it with the current element.
-		  temporaryValue = array[currentIndex];
-		  array[currentIndex] = array[randomIndex];
-		  array[randomIndex] = temporaryValue;
-		}
-	  
-		return array;
-	  }
 }

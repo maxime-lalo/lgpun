@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Subject, Observable } from 'rxjs';
 import { Card } from '../models/card.model';
 import firebase from 'firebase/app';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Conf } from '../conf';
+
 import 'firebase/database';
 import 'firebase/storage';
 import DataSnapshot = firebase.database.DataSnapshot;
@@ -13,40 +16,19 @@ export class CardsService {
 	cards: Card[] = [];
 	cardsSubject = new Subject<Card[]>();
 
-	constructor() { 
+	constructor(private http: HttpClient) { 
 		
 	}
 
-	emitCards(){
-		this.cardsSubject.next(this.cards);
-	}
-
-	saveCards(){
-		firebase.database().ref('/cards').set(this.cards);
-	}
-
 	getCards(){
-		firebase.database().ref('/cards').on('value', (data: DataSnapshot) => {
-			this.cards = data.val() ? data.val() : [];
-			this.emitCards();
-		});
+		return this.http.get<Card[]>(Conf.apiEndpoint + "/cards");
 	}
 
 	getAvailableCards(){
-		firebase.database().ref('/availableCards').on('value', (data: DataSnapshot) => {
-			this.cards = data.val() ? data.val() : [];
-			this.emitCards();
-		});
+		return this.http.get<Card[]>(Conf.apiEndpoint + "/cards/playable");
 	}
 
 	getSingleCard(id: number){
-		return new Promise( (resolve,reject) => {
-			firebase.database().ref('/cards/' + id).once('value').then( (data : DataSnapshot) => {
-				resolve(data.val());
-			},
-			(error) => {
-				reject(error);
-			});
-		});
+		return this.http.get<Card>(Conf.apiEndpoint + "/cards/" + id);
 	}
 }

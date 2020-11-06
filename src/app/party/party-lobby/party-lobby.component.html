@@ -1,23 +1,42 @@
-<div class="row justify-content-center">
-	<div class="col-sm-10 col-lg-8">
-		<h2>
-			Bienvenue sur la partie : {{ party.code }}
-			<span class="float-right">
-				<button class="btn btn-danger" [disabled]="party.code === ''" (click)="onQuitParty()" *ngIf="party.creator !== user">Quitter la partie</button>
-				<button class="btn btn-danger" [disabled]="party.code === ''" (click)="onDeleteParty()" *ngIf="party.creator === user">Supprimer la partie</button>
-				<button class="btn btn-success ml-2" [disabled]="(party.code === '') || (party.players.length != (party.numberOfPlayers-1))" (click)="onLaunchParty()" *ngIf="party.creator === user">Lancer la partie</button>
-			</span>
-		</h2>
+<div *ngIf="party">
+	<div class="row justify-content-center">
+		<div class="col-sm-10 col-lg-8">
+			<h2>
+				Bienvenue sur la partie : {{ party.code }}
+				<span class="float-right">
+					<button class="btn btn-danger" [disabled]="party.code === ''" (click)="onQuitParty()" *ngIf="party.creator.id_firebase !== user">Quitter la partie</button>
+					<button class="btn btn-danger" [disabled]="party.code === ''" (click)="onDeleteParty()" *ngIf="party.creator.id_firebase === user">Supprimer la partie</button>
+					<button class="btn btn-success ml-2" [disabled]="(party.code === '') || (party.players.length != (party.cards.length-3))" (click)="onLaunchParty()" *ngIf="party.creator.id_firebase === user">Lancer la partie</button>
+				</span>
+			</h2>
+		</div>
+	</div>
+	<div class="row justify-content-center mt-2">
+		<div class="col-sm-5 col-lg-2">
+			<ul class="list-group">
+				<p class="text-center" style="text-decoration: underline;font-weight: bold;">Liste des joueurs</p>
+				<li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let user of party.players">
+					{{ user.pseudo }}
+					<span class="badge badge-success badge-pill" *ngIf="user.id_firebase === party.creator.id_firebase">HOST</span>
+					<span class="badge badge-primary badge-pill" *ngIf="user.id_firebase !== party.creator.id_firebase">JOUEUR</span>
+				</li>
+			  </ul>
+		</div>
+		<div class="col-sm-5 col-lg-2">
+			<p class="text-center" style="text-decoration: underline;font-weight: bold;">Liste des cartes</p>
+			<ul class="list-group">
+				<li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let card of party.cards">
+					{{ card.name }}
+				</li>
+			  </ul>
+		</div>
 	</div>
 </div>
-<div class="row justify-content-center mt-2">
-	<div class="col-sm-10 col-lg-2">
-		<ul class="list-group">
-			<li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let user of party.players">
-				{{ user.pseudo }}
-				<span class="badge badge-success badge-pill" *ngIf="user.id === party.creator">HOST</span>
-				<span class="badge badge-primary badge-pill" *ngIf="user.id !== party.creator">JOUEUR</span>
-			</li>
-		  </ul>
+<div class="component-loader" *ngIf="!party">
+	<div>
+		Chargement du lobby
+	</div>
+	<div>
+		<i class="fas fa-circle-notch fa-spin"></i>
 	</div>
 </div>

@@ -12,64 +12,46 @@ import firebase from 'firebase/app';
   templateUrl: './party-lobby.component.html',
   styleUrls: ['./party-lobby.component.scss']
 })
-export class PartyLobbyComponent implements OnInit {
-  party: Party = new Party('',null,[],false,'',[],'',[]);
+export class PartyLobbyComponent implements OnInit,OnDestroy {
+	party;
 	partySubject = new Subject<Party>();
 	partySubscription:Subscription;
 	user:string;
+
+	interval;
+
 	constructor(private route: ActivatedRoute, private partyService:PartyService, private router:Router,private authService:AuthService) { }
 
 	ngOnInit(): void {
 		const uid = this.authService.getCurrentUser().uid;
 		this.user = uid;
-
-		this.getParty(uid);
-		this.partySubject.subscribe((party:Party) =>{
-			this.party = party;
-		});
-		this.emitParty();
+		this.interval = setInterval(() => {
+			this.partyService.getUserParty().subscribe((result) => {
+				this.party = result;
+				if(this.party.started){
+					this.router.navigate(['/party']);
+				}
+			});
+		},1000);
 	}
 
-	emitParty(){
-		this.partySubject.next(this.party);
-  }
-  
-  saveParty(){
-    firebase.database().ref('/parties/' + this.party.code).set(this.party);
-    this.emitParty();
-  }
-  
-	getParty(user){
-		firebase.database().ref('/users/' + user + '/party').on('value',(s => {
-			if (s.exists()) {
-				firebase.database().ref('/parties/' + s.val().code).on('value',(party => {
-					if(party.exists()){
-            this.party = party.val();
-            if(this.party.started){
-              this.router.navigate(['party']);
-            }
-						this.emitParty();
-					}
-				}));
-			}
-		}));
+	ngOnDestroy(){
+		clearInterval(this.interval);
 	}
-
-	ngOnDestroy(){}
 
 	onQuitParty(){
-		this.partyService.quitParty();
-		this.router.navigate(['/party/join']);
+		this.partyService.quitParty().subscribe( (result) => {
+			this.router.navigate(['/party/join']);
+		});
 	}
 
 	onLaunchParty(){
-		this.partyService.startParty();
-		this.party.started = true;
-		this.saveParty();
+		this.partyService.startParty(this.party.code).subscribe( (result) => {
+
+		});
   	}
 
 	onDeleteParty(){
 		this.partyService.deleteParty();
-		this.emitParty();
 	}
 }

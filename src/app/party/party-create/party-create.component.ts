@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Party } from '../../models/party.model';
+
 import { PartyService } from '../../services/party.service';
 import { CardsService } from '../../services/cards.service';
 import { AuthService } from '../../services/auth.service';
@@ -15,21 +15,19 @@ import { Subscription } from 'rxjs';
 })
 export class PartyCreateComponent implements OnInit {
 	errorMsg:string;
+	errorMsgRequest:string;
 
 	cards: Card[];
 	cardsSubscription: Subscription;
 
 	createPartyForm: FormGroup;
 	canSubmit: boolean = false;
-	constructor(private formBuilder: FormBuilder, private partyService: PartyService,
-              private router: Router, private cardsService: CardsService, private authService: AuthService) { }
+	constructor(private formBuilder: FormBuilder, private partyService: PartyService,private router: Router, private cardsService: CardsService) { }
 
 	initForm() {
-		this.cardsService.getAvailableCards();
-		this.cardsSubscription = this.cardsService.cardsSubject.subscribe( (cards: Card[]) => {
+		this.cardsSubscription = this.cardsService.getCards().subscribe( (cards: Card[]) => {
 			this.cards = cards;
 		});
-		this.cardsService.emitCards();
 
 		this.createPartyForm = this.formBuilder.group({
 			partyCode: ['',[Validators.required, Validators.pattern(/[0-9a-zA-Z]{4,6}/)]],
@@ -47,8 +45,13 @@ export class PartyCreateComponent implements OnInit {
 		const cards = this.createPartyForm.get('cardsSelected').value;
 		const numberOfPlayers = cards.length-3;
 		
-		this.partyService.newParty(code,cards,numberOfPlayers);
-		this.router.navigate(['/party/lobby']);
+		this.partyService.newParty(code,cards,numberOfPlayers).subscribe((result) =>{
+			if(result[0]){
+				this.errorMsgRequest = result[1];
+			}else{
+				this.router.navigate(['/party/lobby']);
+			}
+		});
 	}
 
 	onSelect(){
