@@ -53,21 +53,8 @@ export class PartyService {
 		return this.http.request('POST',Conf.apiEndpoint + "/party/quit",{'headers':this.requestHeaders,'body':{'user' : uid}});
 	}
 
-	deleteParty(){
-		const uid = this.authService.getCurrentUser().uid;
-		firebase.database().ref('users/' + uid + '/party').once('value', (snapshot) =>{
-			if(snapshot.exists()){
-				let partyCode = snapshot.val();
-				let urlParty = 'parties/' + partyCode.code + '/players';
-				firebase.database().ref(urlParty).once('value', (snapshot2) =>{
-					let players = snapshot2.val();
-					players.forEach( (player,index) =>{
-						firebase.database().ref('/users/' + player.id).set([]);
-					});
-					firebase.database().ref('/parties/' + partyCode.code).set([]);
-				});
-			}
-		});
+	deleteParty(partyCode){
+		return this.http.request('DELETE',Conf.apiEndpoint + "/parties",{'headers':this.requestHeaders,'body':{'code' : partyCode}});
 	}
 
 	startParty(partyCode){

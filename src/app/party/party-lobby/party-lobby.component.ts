@@ -52,6 +52,10 @@ export class PartyLobbyComponent implements OnInit,OnDestroy {
   	}
 
 	onDeleteParty(){
-		this.partyService.deleteParty();
+		this.partyService.deleteParty(this.party.code).subscribe((result) =>{
+			if(result['success']){
+				this.router.navigate(['/party/join']);
+			}
+		});
 	}
 }
