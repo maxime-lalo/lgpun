@@ -42,6 +42,8 @@ export class PartyComponent implements OnInit, OnDestroy {
 
 	doppelCard: number = -1;
 	doppelReveal: number = -1;
+
+	partyEnded: boolean = false;
 	constructor(private route: ActivatedRoute, private partyService:PartyService, private router:Router,private authService:AuthService) { }
 
 	ngOnInit(): void {
@@ -87,13 +89,24 @@ export class PartyComponent implements OnInit, OnDestroy {
 	}
 
 	onSelectCard(card,typeCard){
-		let cardPlaying = this.doppelCard == -1 ? this.party.turn['beginning_card'].id:this.doppelCard;
-		let playerTarget = null;
-		this.party.players.forEach( (player) =>{
-			if (player.id == card) {
-				playerTarget = player;
+		if(this.partyEnded){
+			Swal.fire({
+				title: 'Voulez vous voter pour cette personne ?',
+				showCancelButton: true,
+				cancelButtonColor: '#C10000',
+				confirmButtonColor: '#031b49',
+				confirmButtonText: 'Valider',
+				cancelButtonText: 'Annuler'
+			  }).then((result) => {});
+		}else{
+			let cardPlaying = this.doppelCard == -1 ? this.party.turn['beginning_card'].id:this.doppelCard;
+			let playerTarget = null;
+			this.party.players.forEach( (player) =>{
+				if (player.id == card) {
+					playerTarget = player;
+				}	
 			}
-		})
+		)
 		Swal.fire({
 			title: 'Voulez vous sélectionner cette carte ?',
 			showCancelButton: true,
@@ -154,7 +167,7 @@ export class PartyComponent implements OnInit, OnDestroy {
 						break;
 					// Voleur
 					case 8:
-						// API d'échange de cartes
+						this.partyService.swapCards(playerTarget['ending_card'].id,this.party.turn['ending_card'].id,this.party.code);
 						Swal.fire({
 							title: "Vous avez volé la carte de " + playerTarget.pseudo + " ! ",
 							willClose : () =>{
@@ -176,8 +189,8 @@ export class PartyComponent implements OnInit, OnDestroy {
 									}
 								})
 							})
-
-							// API d'échange de cartes
+							
+							this.partyService.swapCards(playerTarget['ending_card'].id,secondPlayer['ending_card'].id,this.party.code);
 
 							Swal.fire({
 								title: "Inversion !",
@@ -192,6 +205,7 @@ export class PartyComponent implements OnInit, OnDestroy {
 						break;
 					// Soulard
 					case 10:
+						this.partyService.soulardCard(this.party.turn['ending_card'].id,card,this.party.code);
 						Swal.fire({
 							title: "Hips !",
 							html: "Tu as récupéré une carte au milieu, puisse le sort t'être favorable",
@@ -206,6 +220,7 @@ export class PartyComponent implements OnInit, OnDestroy {
 				}
 			}
 		  });
+		}
 	}
 
 	play(type){
@@ -321,11 +336,17 @@ export class PartyComponent implements OnInit, OnDestroy {
 				this.counterLaunched = true;
 				this.launchCounterHide();
 			}
-			if(party.turn['id_firebase'] ==  this.user){
-				this.sendSwal(party.turn['beginning_card']);
-			}else{
-				this.canActivateCards = false;
-				this.canActivateNotUsedCards = false;
+			if(this.party.ended && !this.partyEnded){
+				this.partyEnded = true;
+				this.showEnd();
+			}
+			if(!this.party.ended){
+				if(party.turn['id_firebase'] ==  this.user){
+					this.sendSwal(party.turn['beginning_card']);
+				}else{
+					this.canActivateCards = false;
+					this.canActivateNotUsedCards = false;
+				}
 			}
 		});
 	}
@@ -359,5 +380,35 @@ export class PartyComponent implements OnInit, OnDestroy {
 				this.triggerNextTurnCounter = 9;
 			}
 		},1000)
+	}
+
+	showEnd(){
+		let coq = new Howl({
+			src: ["http://files.eplp.fr/lgpun/musics/coq_chant.mp3"],
+			html5: true,
+			buffer: true
+		  });
+
+		coq.play();
+		coq.volume(this.volume);
+
+		this.sound.stop();
+		this.sound = new Howl({
+			src: ["http://files.eplp.fr/lgpun/musics/day_theme.mp3"],
+			html5: true,
+			buffer: true,
+			loop: true
+		  });
+
+		this.sound.play();
+		this.sound.volume(this.volume);
+
+		Swal.fire({
+			title: "Fin de partie",
+			html: "Le jour se lève sur la ville, il va falloir voter pour qui vous pensez être les loups !",
+			willClose: () => {
+				this.canActivateCards = true;
+			}
+		})
 	}
 }

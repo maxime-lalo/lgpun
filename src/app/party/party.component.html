@@ -10,7 +10,7 @@
         Les cartes seront cachées dans {{ hiddenCardsCounter+1 }} secondes
     </div>
     <div class="row justify-content-center">
-        <div class="col-lg-10">
+        <div class="col-lg-10 col-sm-10">
             <h2 class="text-center">
                 Partie {{ party.code }} en cours
             </h2>
@@ -26,9 +26,9 @@
         </div>
     </div>
     <div class="row justify-content-center">
-        <div class="col-lg-6">
+        <div class="col-lg-6 col-sm-10">
             <div class="row justify-content-center">
-                <div class="col-lg-2" *ngFor="let player of party.players">
+                <div class="col-lg-2 col-sm-2" *ngFor="let player of party.players">
                     <p class="text-center font-weight-bold mb-1" *ngIf="player.id_firebase != user">{{ player.pseudo }}</p>
                     <p class="text-center font-weight-bold mb-1" *ngIf="player.id_firebase == user">Vous</p>
                     <div>

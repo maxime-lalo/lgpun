@@ -72,4 +72,20 @@ export class PartyService {
 	nextTurn(partyCode){
 		return this.http.request('POST',Conf.apiEndpoint + "/party/nextTurn",{'headers':this.requestHeaders,'body':{'party' : partyCode}}).subscribe();
 	}
+
+	swapCards(firstCard, secondCard,partyCode){
+		return this.http.request('POST',Conf.apiEndpoint + "/party/invertCards",{'headers':this.requestHeaders,'body':{
+			'first_card': firstCard,
+			'party' : partyCode,
+			'second_card': secondCard
+		}}).subscribe();
+	}
+
+	soulardCard(userCard,notUsedCard,partyCode){
+		return this.http.request('POST',Conf.apiEndpoint + "/party/invertNotUsed",{'headers':this.requestHeaders,'body':{
+			'used_card': userCard,
+			'not_used_card' : notUsedCard,
+			'party': partyCode
+		}}).subscribe();
+	}
 }
