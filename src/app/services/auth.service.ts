@@ -1,13 +1,17 @@
 import { Injectable } from '@angular/core';
 import firebase from 'firebase/app';
 import 'firebase/auth';
-
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Conf } from '../conf';
 @Injectable({
 	providedIn: 'root'
 })
 export class AuthService {
+	requestHeaders = new HttpHeaders({ 
+		'Access-Control-Allow-Origin':'*'
+	});
 
-	constructor() { }
+	constructor(private http:HttpClient) { }
 
 	createNewUser(email: string, password: string) {
 		return new Promise(
@@ -22,6 +26,13 @@ export class AuthService {
 				);
 			}
 		);
+	}
+
+	registerUserInDb(id_firebase,pseudo){
+		return this.http.request('POST',Conf.apiEndpoint + '/player',{'headers':this.requestHeaders,'body':{
+			id_firebase: id_firebase,
+			pseudo: pseudo
+		}}).subscribe();
 	}
 
 	signInUser(email: string, password: string) {

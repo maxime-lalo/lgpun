@@ -34,6 +34,7 @@ export class SignupComponent implements OnInit {
 		this.authService.createNewUser(email, password).then(
 			() => {
 				let user = this.authService.getCurrentUser();
+				this.authService.registerUserInDb(user,pseudo);
 				user.updateProfile({
 				  displayName: pseudo
 				})
