@@ -1,3 +1,3 @@
 export const Conf = {
-    'apiEndpoint' : 'http://api.eplp.fr/lgpun'
+    'apiEndpoint' : 'https://api.eplp.fr/lgpun'
 }
