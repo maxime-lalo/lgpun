@@ -34,7 +34,8 @@ export class PartyComponent implements OnInit, OnDestroy {
 	firstCardToReveal: number = -1;
 	secondCardToReveal: number = -1;
 
-	triggerNextTurnCounter: number = 9;
+	triggerNextTurnCounter: number = 19;
+	triggerNextTurnPercentage: number = 0;
 	triggerNextTurnInterval;
 	nextTurnCounter: boolean = false;
 
@@ -76,12 +77,13 @@ export class PartyComponent implements OnInit, OnDestroy {
 	
 	sendSwal(card){
 		if(!this.swalSent){
+			this.triggerNextTurn();
 			Swal.fire({
 				title: 'C\'est votre tour ! ',
 				text: card.help,
 				icon: 'success',
 				willClose: () => {
-					this.play(card.id)
+					this.play(card.id);
 				}
 			});
 			this.swalSent = true;
@@ -139,13 +141,11 @@ export class PartyComponent implements OnInit, OnDestroy {
 					case 2: case 3:
 						this.firstCardToReveal = card;
 						this.canActivateNotUsedCards = false;
-						this.triggerNextTurn();
 						break;
 					// Francs maçons
 					case 5: case 6:
 						this.firstCardToReveal = card;
 						this.canActivateNotUsedCards = false;
-						this.triggerNextTurn();
 						break;
 					// Voyante
 					case 7:
@@ -153,13 +153,11 @@ export class PartyComponent implements OnInit, OnDestroy {
 							if(typeCard != 'notUsed'){
 								this.canActivateCards = false;
 								this.canActivateNotUsedCards = false;
-								this.triggerNextTurn();
 							}
 							this.firstCardToReveal = card;
 						}else{
 							this.secondCardToReveal = card;
 							this.canActivateNotUsedCards = false;
-							this.triggerNextTurn();
 						}
 						if(typeCard == 'notUsed'){
 							this.canActivateCards = false;
@@ -172,7 +170,6 @@ export class PartyComponent implements OnInit, OnDestroy {
 							title: "Vous avez volé la carte de " + playerTarget.pseudo + " ! ",
 							willClose : () =>{
 								this.canActivateCards = false;
-								this.triggerNextTurn();
 							}
 						}); 
 						break;
@@ -197,7 +194,6 @@ export class PartyComponent implements OnInit, OnDestroy {
 								html: "Tu as inversé les cartes de <strong>" + secondPlayer.pseudo + "</strong> et <strong>" + playerTarget.pseudo + "</strong> !",
 								willClose : () =>{
 									this.canActivateCards = false;
-									this.triggerNextTurn();
 								}
 							}); 
 							// échanger les deux cartes
@@ -211,7 +207,6 @@ export class PartyComponent implements OnInit, OnDestroy {
 							html: "Tu as récupéré une carte au milieu, puisse le sort t'être favorable",
 							willClose : () =>{
 								this.canActivateNotUsedCards = false;
-								this.triggerNextTurn();
 							}
 						}); 
 						break;
@@ -245,10 +240,7 @@ export class PartyComponent implements OnInit, OnDestroy {
 						});
 						Swal.fire({
 							title: "Vous n'êtes pas seul...",
-							html: htmlFormatted,
-							willClose: () => {
-								this.triggerNextTurn();
-							}
+							html: htmlFormatted
 						});
 					}else{
 						this.canActivateNotUsedCards = true;
@@ -267,10 +259,7 @@ export class PartyComponent implements OnInit, OnDestroy {
 						});
 						Swal.fire({
 							title: "Vous n'êtes pas seul...",
-							html: htmlFormatted,
-							willClose: () => {
-								this.triggerNextTurn();
-							}
+							html: htmlFormatted
 						});
 					}else{
 						this.canActivateNotUsedCards = true;
@@ -305,7 +294,6 @@ export class PartyComponent implements OnInit, OnDestroy {
 						}
 					});
 					this.firstCardToReveal = cardToSee;
-					this.triggerNextTurn();
 				}else{
 					let cardToSee = null;
 					this.party.players.forEach( (player) => {
@@ -313,14 +301,9 @@ export class PartyComponent implements OnInit, OnDestroy {
 							cardToSee = player.id;
 						}
 					});
-					console.log(cardToSee);
 					Swal.fire({
 						title: "Vous avez copié l'insomniaque !",
-						html: "Vous allez pouvoir voir votre carte avant le réveil afin de savoir dans quel camp vous vous situez",
-						willClose: () => {
-							this.firstCardToReveal = cardToSee;
-							this.triggerNextTurn();
-						}
+						html: "Vous allez pouvoir voir votre carte avant le réveil afin de savoir dans quel camp vous vous situez"
 					})
 				}
 				break;
@@ -331,6 +314,14 @@ export class PartyComponent implements OnInit, OnDestroy {
 
 	getParty(){
 		this.partyService.getUserParty().subscribe((party:Party) =>{
+			let now = new Date();
+			let turnEnd = new Date(party.turnEnd.date);
+			let diff = turnEnd.getTime() - now.getTime();
+			console.log(now);
+			console.log(turnEnd);
+			console.log(diff);
+
+			party.turnEnd = diff;
 			this.party = party;
 			if(this.counterLaunched == false && party.cardsHidden == false){
 				this.counterLaunched = true;
@@ -341,8 +332,13 @@ export class PartyComponent implements OnInit, OnDestroy {
 				this.showEnd();
 			}
 			if(!this.party.ended){
-				if(party.turn['id_firebase'] ==  this.user){
-					this.sendSwal(party.turn['beginning_card']);
+				if(party.turn){
+					if(party.turn['id_firebase'] ==  this.user){
+						this.sendSwal(party.turn['beginning_card']);
+					}else{
+						this.canActivateCards = false;
+						this.canActivateNotUsedCards = false;
+					}
 				}else{
 					this.canActivateCards = false;
 					this.canActivateNotUsedCards = false;
@@ -368,16 +364,20 @@ export class PartyComponent implements OnInit, OnDestroy {
 		this.nextTurnCounter = true;
 		this.triggerNextTurnInterval = setInterval( () => {
 			this.triggerNextTurnCounter--;
+			this.triggerNextTurnPercentage = 100-(this.triggerNextTurnCounter+1)*5;
 			if(this.triggerNextTurnCounter == 0){
-				this.partyService.nextTurn(this.party.code);
+				if(this.party.turn.id_firebase == this){
+					this.partyService.nextTurn(this.party.code);
+				}
 			}
 			if(this.triggerNextTurnCounter < 0){
+				//this.partyService.nextTurn(this.party.code);
+				clearInterval(this.triggerNextTurnInterval);
 				this.firstCardToReveal = -1;
 				this.secondCardToReveal = -1;
 				this.doppelReveal = -1;
 				this.nextTurnCounter = false;
-				clearInterval(this.triggerNextTurnInterval);
-				this.triggerNextTurnCounter = 9;
+				this.triggerNextTurnCounter = 19;
 			}
 		},1000)
 	}

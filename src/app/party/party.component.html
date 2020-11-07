@@ -1,7 +1,18 @@
 <div *ngIf="party">
 
     <div class="progress" *ngIf="nextTurnCounter" style="border-radius:0px;position:absolute;width:100%;left:0px">
-        <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" role="progressbar" [ngStyle]="{width: (100 - ((triggerNextTurnCounter+1)*10)+'%')}" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+        <div 
+            [ngClass]="{ 
+                'bg-primary' : (triggerNextTurnPercentage < 50), 
+                'bg-warning' : (triggerNextTurnPercentage > 50 && triggerNextTurnPercentage < 85 ), 
+                'bg-danger'  : (triggerNextTurnPercentage >= 85)
+            }"
+            class="progress-bar progress-bar-striped progress-bar-animated"
+            role="progressbar"
+            [ngStyle]="{width: (100 - ((triggerNextTurnCounter+1)*5)+'%')}"
+            aria-valuenow="25"
+            aria-valuemin="0"
+            aria-valuemax="100">
             
         </div>
     </div>
@@ -76,6 +87,16 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div style="position:absolute;bottom:0;left:5px" *ngIf="party.turn">
+        <p style="font-size:20px;padding:0px;margin:0px">
+            Tour en cours : <strong>{{ party.turn.beginning_card.name }}</strong> ({{ party.turnEnd | date:'ss'}} s restantes)
+        </p>
+    </div>
+    <div style="position:absolute;bottom:0;left:5px" *ngIf="party.fakeTurn && !party.turn">
+        <p style="font-size:20px;padding:0px;margin:0px">
+            Tour en cours : <strong>{{ party.fakeTurn.name }}</strong> ({{ party.turnEnd | date:'ss'}} s restantes)
+        </p>
     </div>
     <div style="position:absolute;bottom:0;right:5px">
         <input type="range" min="0" max="1" [(ngModel)]="volume" step="0.01" id="volume" (input)="onChangeVolume()">
