@@ -21,7 +21,7 @@ export class PartyComponent implements OnInit, OnDestroy {
 	interval;
 	user:string;
 	sound:Howl;
-	volume: number = 0;
+	volume: number = 0.5;
 	swalSent: boolean = false;
 
 	canActivateCards: boolean = false;
@@ -315,13 +315,12 @@ export class PartyComponent implements OnInit, OnDestroy {
 	getParty(){
 		this.partyService.getUserParty().subscribe((party:Party) =>{
 			let now = new Date();
-			let turnEnd = new Date(party.turnEnd.date);
-			let diff = turnEnd.getTime() - now.getTime();
-			console.log(now);
-			console.log(turnEnd);
-			console.log(diff);
-
-			party.turnEnd = diff;
+			if(party.turnEnd){
+				let turnEnd = new Date(party.turnEnd.date);
+				let diff = turnEnd.getTime() - now.getTime();
+				party.turnEnd = diff;
+			}
+			
 			this.party = party;
 			if(this.counterLaunched == false && party.cardsHidden == false){
 				this.counterLaunched = true;
