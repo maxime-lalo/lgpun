@@ -262,6 +262,10 @@ export class PartyComponent implements OnInit, OnDestroy {
 							html: htmlFormatted
 						});
 					}else{
+						Swal.fire({
+							title: "Vous n'êtes seul",
+							html: "Vous êtes le seul loup actif de la partie, vous pouvez donc voir une des cartes au centre"
+						});
 						this.canActivateNotUsedCards = true;
 					}
 				});
