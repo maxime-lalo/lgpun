@@ -51,7 +51,7 @@
                         <p class="text-center font-weight-bold mb-1" *ngIf="player.id_firebase == user">Vous</p>
                         <div>
                             <img 
-                                src="https://firebasestorage.googleapis.com/v0/b/lgpun-20cfa.appspot.com/o/roles%2Fdos.jpg?alt=media&token=6ca2284a-2638-42da-992f-4564e49f2b39" 
+                                src="https://files.eplp.fr/lgpun/cards/dos.png" 
                                 class="w-100 card" 
                                 [ngClass]="{'cardHover': (canActivateCards && player.id_firebase != user)}"  
                                 *ngIf="(player.id_firebase != user || party.cardsHidden) && firstCardToReveal != player.id && doppelReveal != player.id" 
@@ -81,7 +81,7 @@
                         <div class="col-lg-2" *ngFor="let notUsedCard of party.notUsedCards">
                             <div>
                                 <img 
-                                    src="https://firebasestorage.googleapis.com/v0/b/lgpun-20cfa.appspot.com/o/roles%2Fdos.jpg?alt=media&token=6ca2284a-2638-42da-992f-4564e49f2b39" 
+                                    src="https://files.eplp.fr/lgpun/cards/dos.png" 
                                     class="w-100 card" [ngClass]="{'cardHover': canActivateNotUsedCards}" 
                                     (click)="canActivateNotUsedCards && onSelectCard(notUsedCard.id,'notUsed')"
                                     *ngIf="firstCardToReveal != notUsedCard.id && secondCardToReveal != notUsedCard.id">
