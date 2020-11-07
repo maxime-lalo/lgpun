@@ -1,5 +1,4 @@
 <div *ngIf="party">
-
     <div class="progress" *ngIf="nextTurnCounter" style="border-radius:0px;position:absolute;width:100%;left:0px">
         <div 
             [ngClass]="{ 
@@ -27,65 +26,84 @@
             </h2>
         </div>
     </div>
-    <div class="row justify-content-center">
-        <div *ngFor="let player of party.players" class="text-center justify-content-center">
-            <span class="text-center" *ngIf="player.id_firebase == user">
-                Vous êtes <strong>{{ player.beginning_card.name }}</strong>
-                <br>
-                {{ player.beginning_card.help }}
-            </span>
+    <div class="row justify-content-center" *ngIf="party.ended && ((party.players.length - party.votes.length) != 0)">
+        <div class="col-lg-10 col-sm-10">
+            <h2 class="text-center">
+                Votes restants : {{ party.players.length - party.votes.length }}
+            </h2>
         </div>
     </div>
-    <div class="row justify-content-center">
-        <div class="col-lg-6 col-sm-10">
-            <div class="row justify-content-center">
-                <div class="col-lg-2 col-sm-2" *ngFor="let player of party.players">
-                    <p class="text-center font-weight-bold mb-1" *ngIf="player.id_firebase != user">{{ player.pseudo }}</p>
-                    <p class="text-center font-weight-bold mb-1" *ngIf="player.id_firebase == user">Vous</p>
-                    <div>
-                        <img 
-                            src="https://firebasestorage.googleapis.com/v0/b/lgpun-20cfa.appspot.com/o/roles%2Fdos.jpg?alt=media&token=6ca2284a-2638-42da-992f-4564e49f2b39" 
-                            class="w-100 card" 
-                            [ngClass]="{'cardHover': (canActivateCards && player.id_firebase != user)}"  
-                            *ngIf="(player.id_firebase != user || party.cardsHidden) && firstCardToReveal != player.id && doppelReveal != player.id" 
-                            (click)="(canActivateCards && player.id_firebase != user) && onSelectCard(player.id,'player')">
-                        <img
-                            [src]="player.beginning_card.photo"
-                            class="w-100 card" 
-                            *ngIf="player.id_firebase == user && !party.cardsHidden">
-                        <img
-                            [src]="player.ending_card.photo"
-                            class="w-100 card" 
-                            *ngIf="firstCardToReveal == player.id || doppelReveal == player.id">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="cardsNotUsed mt-4">
+    <div *ngIf="!mostVoted">
         <div class="row justify-content-center">
-            <div class="col-lg-12">
-                <h2 class="text-center">Cartes non utilisées</h2>
+            <div *ngFor="let player of party.players" class="text-center justify-content-center">
+                <span class="text-center" *ngIf="player.id_firebase == user">
+                    Vous êtes <strong>{{ player.beginning_card.name }}</strong>
+                    <br>
+                    {{ player.beginning_card.help }}
+                </span>
             </div>
         </div>
         <div class="row justify-content-center">
-            <div class="col-lg-6">
+            <div class="col-lg-6 col-sm-10">
                 <div class="row justify-content-center">
-                    <div class="col-lg-2" *ngFor="let notUsedCard of party.notUsedCards">
+                    <div class="col-lg-2 col-sm-2" *ngFor="let player of party.players">
+                        <p class="text-center font-weight-bold mb-1" *ngIf="player.id_firebase != user">{{ player.pseudo }}</p>
+                        <p class="text-center font-weight-bold mb-1" *ngIf="player.id_firebase == user">Vous</p>
                         <div>
                             <img 
                                 src="https://firebasestorage.googleapis.com/v0/b/lgpun-20cfa.appspot.com/o/roles%2Fdos.jpg?alt=media&token=6ca2284a-2638-42da-992f-4564e49f2b39" 
-                                class="w-100 card" [ngClass]="{'cardHover': canActivateNotUsedCards}" 
-                                (click)="canActivateNotUsedCards && onSelectCard(notUsedCard.id,'notUsed')"
-                                *ngIf="firstCardToReveal != notUsedCard.id && secondCardToReveal != notUsedCard.id">
-                            <img 
-                                [src]="notUsedCard.photo" 
-                                class="w-100 card" [ngClass]="{'cardHover': canActivateNotUsedCards}" 
-                                *ngIf="firstCardToReveal == notUsedCard.id || secondCardToReveal == notUsedCard.id">
+                                class="w-100 card" 
+                                [ngClass]="{'cardHover': (canActivateCards && player.id_firebase != user)}"  
+                                *ngIf="(player.id_firebase != user || party.cardsHidden) && firstCardToReveal != player.id && doppelReveal != player.id" 
+                                (click)="(canActivateCards && player.id_firebase != user) && onSelectCard(player.id,'player')">
+                            <img
+                                [src]="player.beginning_card.photo"
+                                class="w-100 card" 
+                                *ngIf="player.id_firebase == user && !party.cardsHidden">
+                            <img
+                                [src]="player.ending_card.photo"
+                                class="w-100 card" 
+                                *ngIf="firstCardToReveal == player.id || doppelReveal == player.id">
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="cardsNotUsed mt-4">
+            <div class="row justify-content-center">
+                <div class="col-lg-12">
+                    <h2 class="text-center">Cartes non utilisées</h2>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-2" *ngFor="let notUsedCard of party.notUsedCards">
+                            <div>
+                                <img 
+                                    src="https://firebasestorage.googleapis.com/v0/b/lgpun-20cfa.appspot.com/o/roles%2Fdos.jpg?alt=media&token=6ca2284a-2638-42da-992f-4564e49f2b39" 
+                                    class="w-100 card" [ngClass]="{'cardHover': canActivateNotUsedCards}" 
+                                    (click)="canActivateNotUsedCards && onSelectCard(notUsedCard.id,'notUsed')"
+                                    *ngIf="firstCardToReveal != notUsedCard.id && secondCardToReveal != notUsedCard.id">
+                                <img 
+                                    [src]="notUsedCard.photo" 
+                                    class="w-100 card" [ngClass]="{'cardHover': canActivateNotUsedCards}" 
+                                    *ngIf="firstCardToReveal == notUsedCard.id || secondCardToReveal == notUsedCard.id">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div  class="row justify-content-center" *ngIf="mostVoted">
+        <div class="col-lg-10 text-center">
+            <p>{{ mostVoted.pseudo }} a été le plus voté</p>
+            <p>Son rôle était {{ mostVoted.ending_card.name }}</p>
+            <p>
+                <button class="btn btn-success mr-2" (click)="relaunchParty()" *ngIf="party.creator.id_firebase == user">Relancer la partie</button>
+                <button class="btn btn-danger">Quitter la partie</button>
+            </p>
         </div>
     </div>
     <div style="position:absolute;bottom:0;left:5px" *ngIf="party.turn">

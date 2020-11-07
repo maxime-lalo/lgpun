@@ -29,7 +29,7 @@ export class AuthService {
 	}
 
 	registerUserInDb(id_firebase,pseudo){
-		return this.http.request('POST',Conf.apiEndpoint + '/player',{'headers':this.requestHeaders,'body':{
+		return this.http.request('POST',Conf.apiEndpoint + '/user',{'headers':this.requestHeaders,'body':{
 			id_firebase: id_firebase,
 			pseudo: pseudo
 		}}).subscribe();

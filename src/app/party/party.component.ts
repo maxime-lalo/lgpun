@@ -45,6 +45,8 @@ export class PartyComponent implements OnInit, OnDestroy {
 	doppelReveal: number = -1;
 
 	partyEnded: boolean = false;
+
+	mostVoted = null;
 	constructor(private route: ActivatedRoute, private partyService:PartyService, private router:Router,private authService:AuthService) { }
 
 	ngOnInit(): void {
@@ -99,7 +101,19 @@ export class PartyComponent implements OnInit, OnDestroy {
 				confirmButtonColor: '#031b49',
 				confirmButtonText: 'Valider',
 				cancelButtonText: 'Annuler'
-			  }).then((result) => {});
+			}).then((result) => {
+				let user = null;	
+				this.party.players.forEach( (player) => {
+					if(player.id_firebase == this.user){
+						user = player.id;
+					}
+				})
+				this.partyService.vote(user,card,this.party.code);
+				Swal.fire({
+					title: 'A voté !',
+					html: 'Votre vote a bien été pris en compte'
+				});
+			  });
 		}else{
 			let cardPlaying = this.doppelCard == -1 ? this.party.turn['beginning_card'].id:this.doppelCard;
 			let playerTarget = null;
@@ -318,22 +332,32 @@ export class PartyComponent implements OnInit, OnDestroy {
 
 	getParty(){
 		this.partyService.getUserParty().subscribe((party:Party) =>{
+			if(party.relaunch){
+				this.router.navigate(['/party/lobby']);
+			}
 			let now = new Date();
+			// Si une heure de fin de tour est définie
 			if(party.turnEnd){
 				let turnEnd = new Date(party.turnEnd.date);
 				let diff = turnEnd.getTime() - now.getTime();
 				party.turnEnd = diff;
 			}
-			
+			// On attribue party à notre component
 			this.party = party;
+
+			// Si on a pas encore caché les cartes en début de partie
 			if(this.counterLaunched == false && party.cardsHidden == false){
 				this.counterLaunched = true;
 				this.launchCounterHide();
 			}
+
+			// Si la partie vient de se terminer
 			if(this.party.ended && !this.partyEnded){
 				this.partyEnded = true;
 				this.showEnd();
 			}
+
+			// Tant que la partie n'est pas terminée
 			if(!this.party.ended){
 				if(party.turn){
 					if(party.turn['id_firebase'] ==  this.user){
@@ -345,6 +369,32 @@ export class PartyComponent implements OnInit, OnDestroy {
 				}else{
 					this.canActivateCards = false;
 					this.canActivateNotUsedCards = false;
+				}
+			}else{
+				// Tant que la partie est terminée
+				party.votes.forEach( (vote) => {
+					if(vote.user.id_firebase == this.user){
+						this.canActivateCards = false;
+					}
+				});
+				if( (party.players.length - party.votes.length) == 0){
+					let maxVotes = 0;
+					let userMaxVotes = null;
+					party.players.forEach( (player) => {
+						let voteCounter = 0;
+						party.votes.forEach( (vote) => {
+							if(vote.target.id == player.id){
+								voteCounter++;
+							}							
+						});
+
+						if(voteCounter > maxVotes){
+							maxVotes = voteCounter;
+							userMaxVotes = player;
+						}
+					});
+					this.mostVoted = userMaxVotes;
+					console.log(this.mostVoted);
 				}
 			}
 		});
@@ -413,5 +463,9 @@ export class PartyComponent implements OnInit, OnDestroy {
 				this.canActivateCards = true;
 			}
 		})
+	}
+
+	relaunchParty(){
+		this.partyService.relaunch(this.party.code);
 	}
 }

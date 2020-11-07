@@ -25,14 +25,17 @@ export class PartyJoinComponent implements OnInit, OnDestroy {
 	}
 	ngOnInit(): void {
 		this.initForm();
-
+		this.getParties();
 		this.interval = setInterval(() => { 
-			this.partyService.getParties().subscribe( (result) => {
-				this.parties = result;
-			});
+			this.getParties();
 		}, 1000);
 	}
 
+	getParties(){
+		this.partyService.getParties().subscribe( (result) => {
+			this.parties = result;
+		});
+	}
 	ngOnDestroy():void{
 		clearInterval(this.interval);
 	}

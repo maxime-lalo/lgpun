@@ -25,16 +25,20 @@ export class PartyLobbyComponent implements OnInit,OnDestroy {
 	ngOnInit(): void {
 		const uid = this.authService.getCurrentUser().uid;
 		this.user = uid;
+		this.getParty();
 		this.interval = setInterval(() => {
-			this.partyService.getUserParty().subscribe((result) => {
-				this.party = result;
-				if(this.party.started){
-					this.router.navigate(['/party']);
-				}
-			});
+			this.getParty();
 		},1000);
 	}
 
+	getParty(){
+		this.partyService.getUserParty().subscribe((result) => {
+			this.party = result;
+			if(this.party.started){
+				this.router.navigate(['/party']);
+			}
+		});
+	}
 	ngOnDestroy(){
 		clearInterval(this.interval);
 	}

@@ -88,4 +88,16 @@ export class PartyService {
 			'party': partyCode
 		}}).subscribe();
 	}
+
+	vote(user,target,partyCode){
+		return this.http.request('POST',Conf.apiEndpoint + "/party/addVote",{'headers':this.requestHeaders,'body':{
+			'party' : partyCode,
+			'user'  : user,
+			'target': target
+		}}).subscribe();
+	}
+
+	relaunch(partyCode){
+		return this.http.request('POST',Conf.apiEndpoint + "/party/relaunch",{'headers':this.requestHeaders,'body':{'party' : partyCode}}).subscribe();
+	}
 }
