@@ -34,7 +34,7 @@ export class PartyLobbyComponent implements OnInit,OnDestroy {
 	getParty(){
 		this.partyService.getUserParty().subscribe((result) => {
 			this.party = result;
-			if(this.party.started){
+			if(this.party.started || (this.party.ended && !this.party.relaunch) ){
 				this.router.navigate(['/party']);
 			}
 		});
