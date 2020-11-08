@@ -102,17 +102,19 @@ export class PartyComponent implements OnInit, OnDestroy {
 				confirmButtonText: 'Valider',
 				cancelButtonText: 'Annuler'
 			}).then((result) => {
-				let user = null;	
-				this.party.players.forEach( (player) => {
-					if(player.id_firebase == this.user){
-						user = player.id;
-					}
-				})
-				this.partyService.vote(user,card,this.party.code);
-				Swal.fire({
-					title: 'A voté !',
-					html: 'Votre vote a bien été pris en compte'
-				});
+				if(result.isConfirmed){
+					let user = null;	
+					this.party.players.forEach( (player) => {
+						if(player.id_firebase == this.user){
+							user = player.id;
+						}
+					})
+					this.partyService.vote(user,card,this.party.code);
+					Swal.fire({
+						title: 'A voté !',
+						html: 'Votre vote a bien été pris en compte'
+					});
+				}
 			  });
 		}else{
 			let cardPlaying = this.doppelCard == -1 ? this.party.turn['beginning_card'].id:this.doppelCard;
